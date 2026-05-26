@@ -181,6 +181,7 @@
     <Content Include="ongclogo.png" />
     <Content Include="ongc_refinery 1.jpg" />
     <Content Include="ongc_refinery.jpg" />
+    <Content Include="OpenFolder.aspx" />
     <Content Include="rig.jpg" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -287,6 +288,13 @@
     </Compile>
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="OpenFolder.aspx.cs">
+      <DependentUpon>OpenFolder.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OpenFolder.aspx.designer.cs">
+      <DependentUpon>OpenFolder.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.master.cs">

@@ -50,7 +50,7 @@ namespace ongc_webapp
                         workbook.Worksheet(1);
 
                     // Headers start from row 6
-                    int headerRow = 6;
+                    int headerRow = 1;
 
                     int lastRow =
                         worksheet.LastRowUsed()
