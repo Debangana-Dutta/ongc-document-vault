@@ -56,21 +56,13 @@
             position: relative;
         }
 
-        .search-bar-wrap .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9aa0a6;
-            pointer-events: none;
-            font-size: 18px;
-            line-height: 1;
-        }
+        /* FIX 2: .search-icon rule removed entirely — span also removed from HTML below */
 
         .search-bar-wrap input[type="text"] {
             width: 100% !important;
             height: 48px !important;
-            padding: 0 20px 0 48px !important;
+            /* FIX 2: left padding reduced now that icon is gone */
+            padding: 0 20px !important;
             border: 1.5px solid #dfe1e5 !important;
             border-radius: 28px !important;
             font-size: 0.95rem !important;
@@ -314,9 +306,14 @@
 
         /* ═══════════════════════════
            TABLE WRAPPER
+           FIX 1: overflow-x changed from auto → hidden so the wrapper
+           itself does NOT produce a second horizontal scrollbar.
+           Horizontal scrolling is handled exclusively by the two
+           sync-scroll tracks above and below (#topScroll / #bottomScroll).
+           Vertical scrolling (overflow-y: auto) is intentionally kept.
         ═══════════════════════════ */
         .results-wrapper {
-            overflow-x: auto;
+            overflow-x: hidden;   /* ← was: auto  (caused double H-scrollbar) */
             overflow-y: auto;
             max-height: 70vh;
             border: 1px solid #e0e0e0;
@@ -595,7 +592,7 @@ window.onload = function () {
         <div class="search-row">
 
             <div class="search-bar-wrap">
-                <span class="search-icon">&#128269;</span>
+                <%-- FIX 2: <span class="search-icon"> removed — icon gone, padding adjusted in CSS --%>
                 <asp:TextBox ID="txtSearch"
                     runat="server"
                     CssClass="form-control"
