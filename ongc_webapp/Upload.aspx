@@ -15,7 +15,11 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label small fw-bold text-uppercase text-secondary">Select Document File</label>
-                    <asp:FileUpload ID="filePayload" runat="server" CssClass="form-control" />
+                    <asp:FileUpload
+                    ID="filePayload"
+                    runat="server"
+                    CssClass="form-control"
+                    AllowMultiple="true" />
                 </div>
                 <div class="col-md-4 d-flex gap-2">
                     <div class="btn-group w-50">

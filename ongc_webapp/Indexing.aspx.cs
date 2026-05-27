@@ -227,6 +227,7 @@ namespace ongc_webapp
 
             
             finalTable.Columns.Add("file_name");
+            finalTable.Columns.Add("view");
 
 
             List<Dictionary<string, string>> allRows =
@@ -278,7 +279,7 @@ namespace ongc_webapp
             }
 
             query +=
-                " ORDER BY uploaded_at DESC";
+                " ORDER BY uploaded_at DESC LIMIT 200";
 
             using (NpgsqlConnection conn =
                 new NpgsqlConnection(connString))
@@ -307,7 +308,18 @@ namespace ongc_webapp
                             rowMap["file_name"] =
                                 reader["file_name"].ToString();
 
-                            
+                            string fileId =
+                            reader["id"].ToString();
+
+                            rowMap["view"] =
+                                "<a target='_blank' " +
+                                "class='btn btn-sm btn-primary' " +
+                                "href='ViewFile.aspx?id=" +
+                                fileId +
+                                "'>" +
+                                "View</a>";
+
+
 
                             string metadataJson =
                                 reader["dynamic_metadata"]

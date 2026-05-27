@@ -19,13 +19,14 @@ namespace ongc_webapp
 
         }
 
-        protected void btnIngestData_Click(object sender, EventArgs e)
+        protected void btnIngestData_Click(
+    object sender,
+    EventArgs e)
         {
-            // Validate upload
-            if (!filePayload.HasFile)
+            if (!filePayload.HasFiles)
             {
                 lblStatusFeedback.Text =
-                    "⚠️ Please upload an Excel file.";
+                    "⚠️ Please upload Excel files.";
 
                 lblStatusFeedback.ForeColor =
                     System.Drawing.Color.OrangeRed;
@@ -33,158 +34,197 @@ namespace ongc_webapp
                 return;
             }
 
-            // Store actual uploaded Excel filename
-            string sourceExcelFile =
-                filePayload.FileName;
+            int successCount = 0;
 
             try
             {
-                using (var stream =
-                    filePayload.PostedFile.InputStream)
-
-                using (var workbook =
-                    new XLWorkbook(stream))
+                using (
+                    NpgsqlConnection conn =
+                    new NpgsqlConnection(connString)
+                )
                 {
-                    // First worksheet
-                    var worksheet =
-                        workbook.Worksheet(1);
+                    conn.Open();
 
-                    // Headers start from row 6
-                    int headerRow = 1;
-
-                    int lastRow =
-                        worksheet.LastRowUsed()
-                        .RowNumber();
-
-                    int lastColumn =
-                        worksheet.LastColumnUsed()
-                        .ColumnNumber();
-
-                    // Read headers
-                    List<string> headers =
-                        new List<string>();
-
-                    for (int col = 1;
-                         col <= lastColumn;
-                         col++)
+                    foreach (
+                        System.Web.HttpPostedFile uploadedFile
+                        in filePayload.PostedFiles
+                    )
                     {
-                        string header =
-                            worksheet.Cell(headerRow, col)
-                            .GetValue<string>()
-                            .Trim()
-                            .ToLower()
-                            .Replace(" ", "_");
-
-                        headers.Add(header);
-                    }
-
-                    using (NpgsqlConnection conn =
-                        new NpgsqlConnection(connString))
-                    {
-                        conn.Open();
-
-                        // Data rows start after header row
-                        for (int row = headerRow + 1;
-                             row <= lastRow;
-                             row++)
+                        if (
+                            uploadedFile == null ||
+                            uploadedFile.ContentLength == 0
+                        )
                         {
-                            string actualFileName = "";
-                            string actualFilePath = "";
+                            continue;
+                        }
 
-                            var dynamicMetadata =
-                                new Dictionary<string, string>();
+                        string sourceExcelFile =
+                            uploadedFile.FileName;
 
-                            for (int col = 1;
-                                 col <= lastColumn;
-                                 col++)
+                        using (
+                            var stream =
+                            uploadedFile.InputStream
+                        )
+
+                        using (
+                            var workbook =
+                            new XLWorkbook(stream)
+                        )
+                        {
+                            var worksheet =
+                                workbook.Worksheet(1);
+
+                            int headerRow = 1;
+
+                            int lastRow =
+                                worksheet.LastRowUsed()
+                                .RowNumber();
+
+                            int lastColumn =
+                                worksheet.LastColumnUsed()
+                                .ColumnNumber();
+
+                            List<string> headers =
+                                new List<string>();
+
+                            for (
+                                int col = 1;
+                                col <= lastColumn;
+                                col++
+                            )
                             {
                                 string header =
-                                    headers[col - 1];
-
-                                string cellValue =
-                                    worksheet.Cell(row, col)
+                                    worksheet
+                                    .Cell(headerRow, col)
                                     .GetValue<string>()
-                                    .Trim();
+                                    .Trim()
+                                    .ToLower()
+                                    .Replace(" ", "_");
 
-                                // Skip empty cells
-                                if (string.IsNullOrWhiteSpace(cellValue))
-                                    continue;
-
-                                // Fixed fields
-                                if (header == "file_name")
-                                {
-                                    actualFileName =
-                                        cellValue;
-                                }
-                                else if (header == "file_path" ||
-                                         header == "path")
-                                {
-                                    actualFilePath =
-                                        cellValue;
-                                }
-                                else
-                                {
-                                    // Dynamic metadata
-                                    dynamicMetadata[header] =
-                                        cellValue;
-                                }
+                                headers.Add(header);
                             }
 
-                            // Skip invalid rows
-                            if (string.IsNullOrWhiteSpace(actualFileName) ||
-                                string.IsNullOrWhiteSpace(actualFilePath))
+                            for (
+                                int row = headerRow + 1;
+                                row <= lastRow;
+                                row++
+                            )
                             {
-                                continue;
-                            }
+                                string actualFileName = "";
+                                string actualFilePath = "";
 
-                            // Convert metadata to JSON
-                            string metadataJson =
-                                JsonConvert.SerializeObject(
-                                    dynamicMetadata);
+                                var dynamicMetadata =
+                                    new Dictionary<string, string>();
 
-                            string insertQuery = @"
-                                INSERT INTO indexed_documents
-                                (
-                                    file_name,
-                                    file_path,
-                                    source_excel_file,
-                                    dynamic_metadata
+                                for (
+                                    int col = 1;
+                                    col <= lastColumn;
+                                    col++
                                 )
-                                VALUES
-                                (
-                                    @file_name,
-                                    @file_path,
-                                    @source_excel_file,
-                                    @meta::jsonb
-                                )";
+                                {
+                                    string header =
+                                        headers[col - 1];
 
-                            using (NpgsqlCommand cmd =
-                                new NpgsqlCommand(insertQuery, conn))
-                            {
-                                cmd.Parameters.AddWithValue(
-                                    "file_name",
-                                    actualFileName);
+                                    string cellValue =
+                                        worksheet
+                                        .Cell(row, col)
+                                        .GetValue<string>()
+                                        .Trim();
 
-                                cmd.Parameters.AddWithValue(
-                                    "file_path",
-                                    actualFilePath);
+                                    if (
+                                        string.IsNullOrWhiteSpace(
+                                            cellValue)
+                                    )
+                                    {
+                                        continue;
+                                    }
 
-                                cmd.Parameters.AddWithValue(
-                                    "source_excel_file",
-                                    sourceExcelFile);
+                                    if (header == "file_name")
+                                    {
+                                        actualFileName =
+                                            cellValue;
+                                    }
+                                    else if (
+                                        header == "file_path" ||
+                                        header == "path"
+                                    )
+                                    {
+                                        actualFilePath =
+                                            cellValue;
+                                    }
+                                    else
+                                    {
+                                        dynamicMetadata[header] =
+                                            cellValue;
+                                    }
+                                }
 
-                                cmd.Parameters.AddWithValue(
-                                    "meta",
-                                    metadataJson);
+                                if (
+                                    string.IsNullOrWhiteSpace(
+                                        actualFileName) ||
 
-                                cmd.ExecuteNonQuery();
+                                    string.IsNullOrWhiteSpace(
+                                        actualFilePath)
+                                )
+                                {
+                                    continue;
+                                }
+
+                                string metadataJson =
+                                    JsonConvert.SerializeObject(
+                                        dynamicMetadata);
+
+                                string insertQuery = @"
+                            INSERT INTO indexed_documents
+                            (
+                                file_name,
+                                file_path,
+                                source_excel_file,
+                                dynamic_metadata
+                            )
+                            VALUES
+                            (
+                                @file_name,
+                                @file_path,
+                                @source_excel_file,
+                                @meta::jsonb
+                            )";
+
+                                using (
+                                    NpgsqlCommand cmd =
+                                    new NpgsqlCommand(
+                                        insertQuery,
+                                        conn)
+                                )
+                                {
+                                    cmd.Parameters.AddWithValue(
+                                        "file_name",
+                                        actualFileName);
+
+                                    cmd.Parameters.AddWithValue(
+                                        "file_path",
+                                        actualFilePath);
+
+                                    cmd.Parameters.AddWithValue(
+                                        "source_excel_file",
+                                        sourceExcelFile);
+
+                                    cmd.Parameters.AddWithValue(
+                                        "meta",
+                                        metadataJson);
+
+                                    cmd.ExecuteNonQuery();
+                                }
                             }
                         }
+
+                        successCount++;
                     }
                 }
 
                 lblStatusFeedback.Text =
-                    "Excel data uploaded successfully.";
+                    successCount +
+                    " Excel files uploaded successfully.";
 
                 lblStatusFeedback.ForeColor =
                     System.Drawing.Color.MediumSeaGreen;
