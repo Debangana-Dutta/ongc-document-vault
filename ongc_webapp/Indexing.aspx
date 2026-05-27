@@ -56,12 +56,9 @@
             position: relative;
         }
 
-        /* FIX 2: .search-icon rule removed entirely — span also removed from HTML below */
-
         .search-bar-wrap input[type="text"] {
             width: 100% !important;
             height: 48px !important;
-            /* FIX 2: left padding reduced now that icon is gone */
             padding: 0 20px !important;
             border: 1.5px solid #dfe1e5 !important;
             border-radius: 28px !important;
@@ -306,14 +303,9 @@
 
         /* ═══════════════════════════
            TABLE WRAPPER
-           FIX 1: overflow-x changed from auto → hidden so the wrapper
-           itself does NOT produce a second horizontal scrollbar.
-           Horizontal scrolling is handled exclusively by the two
-           sync-scroll tracks above and below (#topScroll / #bottomScroll).
-           Vertical scrolling (overflow-y: auto) is intentionally kept.
         ═══════════════════════════ */
         .results-wrapper {
-            overflow-x: hidden;   /* ← was: auto  (caused double H-scrollbar) */
+            overflow-x: hidden;
             overflow-y: auto;
             max-height: 70vh;
             border: 1px solid #e0e0e0;
@@ -322,19 +314,13 @@
 
         /* ═══════════════════════════════════════════════
            GRID TABLE
-           KEY DECISIONS:
-           - table-layout: auto  → columns size to content
-           - white-space: nowrap on ALL th and td → no wrapping
-           - No min-width / max-width on cells
-           - First column sticky (frozen) via position:sticky left:0
-           - Header always maroon via !important + JS reinforcement
         ═══════════════════════════════════════════════ */
         .grid-table {
-            width: auto;           /* let content drive total width    */
+            width: auto;
             border-collapse: collapse;
             background: #fff;
             font-size: 0.875rem;
-            table-layout: auto;   /* columns size to their content     */
+            table-layout: auto;
         }
 
         /* ── ALL header cells ── */
@@ -351,17 +337,30 @@
             font-weight: 500;
             letter-spacing: 0.3px;
             border: 1px solid rgba(255,255,255,0.15) !important;
-            /* STRICT: no wrapping in headers */
             white-space: nowrap !important;
             word-break: normal !important;
             overflow: visible !important;
         }
 
-        /* ── Frozen first header cell ── */
-        .grid-table tr th:first-child {
+        /* ── Frozen col 1 header (View) ── */
+        .grid-table tr th:nth-child(1) {
             position: sticky;
             left: 0;
-            z-index: 6;                          /* above other sticky th */
+            z-index: 6;
+            background-color: #7a0616 !important;
+            color: #fff !important;
+            box-shadow: 3px 0 0 rgba(255,255,255,0.15);
+        }
+
+        /*
+         * ── Frozen col 2 header (file_name) ──
+         * left offset is set dynamically in JS once the View column
+         * width is known (see pinSecondColumn() in window.onload).
+         * The CSS class just marks it as sticky; JS sets left:Npx.
+         */
+        .grid-table tr th:nth-child(2) {
+            position: sticky;
+            z-index: 5;
             background-color: #7a0616 !important;
             color: #fff !important;
             box-shadow: 3px 0 8px rgba(0,0,0,0.18);
@@ -374,24 +373,35 @@
             vertical-align: middle;
             background-color: #fff;
             color: #202124;
-            /* STRICT: no wrapping in any cell */
             white-space: nowrap !important;
             word-break: normal !important;
             overflow: visible !important;
             transition: background-color 0.1s;
         }
 
-        /* ── Frozen first body cell ── */
-        .grid-table tr td:first-child {
+        /* ── Frozen col 1 body (View) ── */
+        .grid-table tr td:nth-child(1) {
             position: sticky;
             left: 0;
             z-index: 2;
+            background-color: #fff;
+            box-shadow: 3px 0 0 #e8eaed;
+            transition: background-color 0.1s;
+        }
+
+        /*
+         * ── Frozen col 2 body (file_name) ──
+         * left offset set dynamically by JS (same as header).
+         */
+        .grid-table tr td:nth-child(2) {
+            position: sticky;
+            z-index: 1;
             background-color: #fff;
             box-shadow: 3px 0 8px rgba(0,0,0,0.08);
             transition: background-color 0.1s;
         }
 
-        /* ── Row hover (entire row including frozen cell) ── */
+        /* ── Row hover ── */
         .grid-table tr:hover td {
             background-color: #eef2f6 !important;
         }
@@ -411,7 +421,7 @@
             background-color: transparent !important;
         }
 
-        /* ── Search highlight injected by C# backend ── */
+        /* ── Search highlight ── */
         .search-highlight {
             background-color: yellow !important;
             color: #000 !important;
@@ -420,7 +430,7 @@
             border-radius: 2px;
         }
 
-        /* ── View button rendered inside GridView cells ── */
+        /* ── View button in cells ── */
         .grid-table tr td input[type="button"],
         .grid-table tr td a.btn,
         .grid-table tr td .btn {
@@ -550,17 +560,103 @@ function wireScrollSync() {
     window.addEventListener("resize", refreshWidth);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   moveViewColumnFirst
+   ─────────────────────────────────────────────────────────────
+   Finds the column whose header text is "View" (case-insensitive)
+   and moves it to index 0 in every row of the GridView table.
+
+   Strategy:
+   1. Walk the header row to find the View column index.
+   2. In every row (header + body), move cells[viewIndex] to
+      cells[0] using insertBefore.
+   3. After reorder, measure the new col-1 width and set
+      left:Npx on every col-2 cell so the second sticky column
+      (file_name) sits flush against the first (View).
+═══════════════════════════════════════════════════════════════ */
+function moveViewColumnFirst() {
+    var table = document.querySelector(".grid-table");
+    if (!table) return;
+
+    var allRows = table.querySelectorAll("tr");
+    if (!allRows.length) return;
+
+    /* ── Step 1: find the View column index from the header row ── */
+    var viewColIndex = -1;
+    var headerRow = null;
+
+    for (var i = 0; i < allRows.length; i++) {
+        var cells = allRows[i].querySelectorAll("th, td");
+        /* Header row is the first row that has <th> elements */
+        if (allRows[i].querySelectorAll("th").length > 0) {
+            headerRow = allRows[i];
+            for (var j = 0; j < cells.length; j++) {
+                if (cells[j].innerText.trim().toLowerCase() === "view") {
+                    viewColIndex = j;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
+    /* Nothing to do if View column is already first or not found */
+    if (viewColIndex <= 0) return;
+
+    /* ── Step 2: move the View cell to position 0 in every row ── */
+    for (var r = 0; r < allRows.length; r++) {
+        var row = allRows[r];
+
+        /* Skip pager rows (they typically have a single td with colspan) */
+        var rowCells = row.querySelectorAll("th, td");
+        if (rowCells.length <= viewColIndex) continue;
+
+        var viewCell = rowCells[viewColIndex];
+        var firstCell = rowCells[0];
+
+        /* insertBefore moves the node; no clone needed */
+        row.insertBefore(viewCell, firstCell);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   pinSecondColumn
+   ─────────────────────────────────────────────────────────────
+   After the column reorder the new col-2 (file_name) needs its
+   CSS `left` offset to equal the rendered width of col-1 (View).
+   CSS alone cannot do this because the width is data-driven.
+   We measure col-1's offsetWidth and stamp left:Npx on every
+   col-2 th and td inline.
+═══════════════════════════════════════════════════════════════ */
+function pinSecondColumn() {
+    var table = document.querySelector(".grid-table");
+    if (!table) return;
+
+    /* Measure width from the first body td in col-1 (more reliable
+       than the header cell which may have different padding/borders) */
+    var firstBodyCell = table.querySelector("tr td:nth-child(1)");
+    if (!firstBodyCell) return;
+    var col1Width = firstBodyCell.offsetWidth;
+
+    /* Apply left offset to ALL col-2 cells (th and td) */
+    var col2Cells = table.querySelectorAll("tr th:nth-child(2), tr td:nth-child(2)");
+    for (var i = 0; i < col2Cells.length; i++) {
+        col2Cells[i].style.left = col1Width + "px";
+    }
+}
+
 window.onload = function () {
     wireScrollSync();
     scrollToFocusedColumn();
 
-    /*
-     * JS reinforcement for maroon header:
-     * ASP.NET GridView with AutoGenerateColumns may not emit <thead>,
-     * so the header <tr> lives inside <tbody>. We find it by looking
-     * for the first row that contains <th> elements and force-apply
-     * inline styles so no Bootstrap rule can override them.
-     */
+    /* ── Step A: move View column to index 0 ── */
+    moveViewColumnFirst();
+
+    /* ── Step B: pin the second column (file_name) flush to col 1 ── */
+    pinSecondColumn();
+
+    /* ── Step C: maroon header reinforcement (unchanged logic) ──
+       Must run AFTER the reorder so the moved View <th> also gets styled. */
     var table = document.querySelector(".grid-table");
     if (!table) return;
 
@@ -592,7 +688,6 @@ window.onload = function () {
         <div class="search-row">
 
             <div class="search-bar-wrap">
-                <%-- FIX 2: <span class="search-icon"> removed — icon gone, padding adjusted in CSS --%>
                 <asp:TextBox ID="txtSearch"
                     runat="server"
                     CssClass="form-control"
