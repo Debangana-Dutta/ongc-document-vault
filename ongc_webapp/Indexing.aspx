@@ -11,174 +11,156 @@
 
     <style>
 
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; }
+
         body {
-            background-color: #f4f6f9;
+            background-color: #f8f9fa;
+            font-family: 'Roboto', Arial, sans-serif;
+            color: #202124;
+            margin: 0;
         }
 
-        .card-box {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .search-header {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 20px;
-        }
-
-        .layout-wrapper {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-        }
-
-        .filter-sidebar {
-            width: 320px;
-            min-width: 320px;
-            max-width: 320px;
-            height: 82vh;
-            background: white;
-            border-radius: 10px;
-            padding: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            position: sticky;
-            top: 15px;
+        /* ═══════════════════════════
+           SEARCH HERO
+        ═══════════════════════════ */
+        .search-hero {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            padding: 36px 24px 28px;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
-        .main-results {
-            flex: 1;
-            min-width: 0;
+        .search-hero-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: #1a0a0e;
+            margin-bottom: 28px;
+            letter-spacing: -0.3px;
+            text-align: center;
         }
 
-        .filter-row {
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 12px;
-            margin-bottom: 12px;
-        }
-
-        .filter-column-name {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #334155;
-            margin-left: 5px;
-        }
-
-        .filter-input-box {
-            margin-top: 10px;
-            display: none;
-        }
-
-        .metadata-filter-search {
-            margin-bottom: 15px;
-        }
-
-        .metadata-scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .metadata-filter-footer {
-            margin-top: 15px;
-            padding-top: 12px;
-            border-top: 1px solid #e2e8f0;
-            background: white;
-        }
-
-        .sticky-horizontal-scroll {
-            overflow-x: auto;
-            overflow-y: hidden;
-            height: 18px;
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 20;
-        }
-
-        .sticky-horizontal-scroll div {
-            height: 1px;
-        }
-
-        .results-wrapper {
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
             width: 100%;
-            overflow-x: auto;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            max-height: 78vh;
         }
 
-        .grid-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1600px;
-            background: white;
+        .search-bar-wrap {
+            flex: 1;
+            position: relative;
         }
 
-        .grid-table th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background-color: #7a0616;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-size: 0.85rem;
-            border: 1px solid #ddd;
+        .search-bar-wrap .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9aa0a6;
+            pointer-events: none;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .search-bar-wrap input[type="text"] {
+            width: 100% !important;
+            height: 48px !important;
+            padding: 0 20px 0 48px !important;
+            border: 1.5px solid #dfe1e5 !important;
+            border-radius: 28px !important;
+            font-size: 0.95rem !important;
+            color: #202124 !important;
+            background: #fff !important;
+            box-shadow: 0 1px 6px rgba(32,33,36,0.08) !important;
+            transition: box-shadow 0.18s, border-color 0.18s !important;
+            outline: none !important;
+        }
+
+        .search-bar-wrap input[type="text"]:focus {
+            border-color: #aaa !important;
+            box-shadow: 0 2px 10px rgba(32,33,36,.16) !important;
+        }
+
+        .mode-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
             white-space: nowrap;
-            position: sticky;
-            top: 0;
-            z-index: 2;
+            font-size: 0.82rem;
+            color: #5f6368;
         }
 
-        .grid-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            vertical-align: top;
-            word-break: break-word;
+        .mode-wrap label { margin: 0; cursor: pointer; }
+
+        input.btn-search-hero,
+        .btn-search-hero {
+            height: 48px;
+            padding: 0 28px;
+            background: #7a0616 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 28px !important;
+            font-family: 'Google Sans', sans-serif;
             font-size: 0.9rem;
-            background-color: white;
-            min-width: 180px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s, box-shadow 0.15s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.22);
         }
 
-        /*FREEZE FILE NAME COLUMN */
-
-        .grid-table th:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 5;
-            background-color: #7a0616;
-            min-width: 260px;
+        input.btn-search-hero:hover,
+        .btn-search-hero:hover {
+            background: #5e0410 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.28);
         }
 
-        .grid-table td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 1;
-            background-color: white;
-            min-width: 260px;
-            max-width: 260px;
-            word-break: break-word;
-            box-shadow: 2px 0 6px rgba(0,0,0,0.08);
+        .btn-col-toggle {
+            margin-top: 18px;
+            padding: 8px 20px;
+            border: 1.5px solid #dadce0;
+            border-radius: 22px;
+            background: #fff;
+            color: #3c4043;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.12s, border-color 0.12s;
+            font-family: 'Roboto', Arial, sans-serif;
         }
 
+        .btn-col-toggle:hover {
+            background: #f1f3f4;
+            border-color: #bbbfc3;
+        }
+
+        /* ═══════════════════════════
+           COLUMN PANEL
+        ═══════════════════════════ */
         .column-panel {
-            margin-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 15px;
+            width: 100%;
+            margin: 14px 0 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 16px;
+            background: #fff;
             display: none;
+        }
+
+        .column-panel h5 {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #3c4043;
+            margin-bottom: 10px;
         }
 
         .column-filter-wrapper {
-            max-height: 180px;
+            max-height: 160px;
             overflow-y: auto;
-            overflow-x: hidden;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             padding: 10px;
@@ -187,389 +169,561 @@
         .checkbox-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
         }
 
+        .column-panel-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .column-panel-actions .btn {
+            flex: 1;
+            font-size: 0.83rem;
+            border-radius: 20px;
+            padding: 6px 0;
+        }
+
+        /* ═══════════════════════════
+           TWO-COLUMN LAYOUT
+        ═══════════════════════════ */
+        .layout-wrapper {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            padding: 0 24px 32px;
+        }
+
+        /* LEFT SIDEBAR */
+        .filter-sidebar {
+            width: 270px;
+            min-width: 270px;
+            max-width: 270px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 14px;
+            max-height: 82vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-sidebar h5 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #3c4043;
+            margin-bottom: 12px;
+        }
+
+        .metadata-filter-search { margin-bottom: 12px; }
+
+        .metadata-filter-search input[type="text"] {
+            border-radius: 20px !important;
+            font-size: 0.83rem !important;
+            border: 1px solid #dadce0 !important;
+            padding: 6px 14px !important;
+            height: 36px !important;
+            width: 100% !important;
+            outline: none !important;
+        }
+
+        .metadata-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .filter-row {
+            border-bottom: 1px solid #f1f3f4;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .filter-column-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #3c4043;
+            margin-left: 4px;
+        }
+
+        .filter-input-box { margin-top: 8px; display: none; }
+
+        .metadata-filter-footer {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        input.btn-apply-dark,
+        .btn-apply-dark {
+            width: 100% !important;
+            background: #1a1a1a !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 20px !important;
+            padding: 9px 0 !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: background 0.12s !important;
+        }
+
+        input.btn-apply-dark:hover,
+        .btn-apply-dark:hover { background: #000 !important; }
+
+        /* RIGHT: Results */
+        .main-results { flex: 1; min-width: 0; }
+
+        .results-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .status-label {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #188038;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* ═══════════════════════════
+           SYNCHRONIZED SCROLLBARS
+        ═══════════════════════════ */
+        .scroll-track {
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 14px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .scroll-track-top  { margin-bottom: 4px; }
+        .scroll-track-bottom { margin-top: 4px; }
+
+        #topScrollContent,
+        #bottomScrollContent { height: 1px; }
+
+        /* ═══════════════════════════
+           TABLE WRAPPER
+        ═══════════════════════════ */
+        .results-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 70vh;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           GRID TABLE
+           KEY DECISIONS:
+           - table-layout: auto  → columns size to content
+           - white-space: nowrap on ALL th and td → no wrapping
+           - No min-width / max-width on cells
+           - First column sticky (frozen) via position:sticky left:0
+           - Header always maroon via !important + JS reinforcement
+        ═══════════════════════════════════════════════ */
+        .grid-table {
+            width: auto;           /* let content drive total width    */
+            border-collapse: collapse;
+            background: #fff;
+            font-size: 0.875rem;
+            table-layout: auto;   /* columns size to their content     */
+        }
+
+        /* ── ALL header cells ── */
+        .grid-table tr th {
+            position: sticky;
+            top: 0;
+            z-index: 4;
+            background-color: #7a0616 !important;
+            color: #fff !important;
+            padding: 11px 18px;
+            text-align: left;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            /* STRICT: no wrapping in headers */
+            white-space: nowrap !important;
+            word-break: normal !important;
+            overflow: visible !important;
+        }
+
+        /* ── Frozen first header cell ── */
+        .grid-table tr th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 6;                          /* above other sticky th */
+            background-color: #7a0616 !important;
+            color: #fff !important;
+            box-shadow: 3px 0 8px rgba(0,0,0,0.18);
+        }
+
+        /* ── ALL body cells ── */
+        .grid-table tr td {
+            padding: 10px 18px;
+            border: 1px solid #e8eaed;
+            vertical-align: middle;
+            background-color: #fff;
+            color: #202124;
+            /* STRICT: no wrapping in any cell */
+            white-space: nowrap !important;
+            word-break: normal !important;
+            overflow: visible !important;
+            transition: background-color 0.1s;
+        }
+
+        /* ── Frozen first body cell ── */
+        .grid-table tr td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background-color: #fff;
+            box-shadow: 3px 0 8px rgba(0,0,0,0.08);
+            transition: background-color 0.1s;
+        }
+
+        /* ── Row hover (entire row including frozen cell) ── */
+        .grid-table tr:hover td {
+            background-color: #eef2f6 !important;
+        }
+
+        /* ── Zebra stripe ── */
+        .grid-table tr:nth-child(even) td {
+            background-color: #fafbfc;
+        }
+
+        .grid-table tr:nth-child(even):hover td {
+            background-color: #eef2f6 !important;
+        }
+
+        /* ── Never zebra or hover the header row ── */
+        .grid-table tr:has(th) td,
+        .grid-table tr:has(th):hover td {
+            background-color: transparent !important;
+        }
+
+        /* ── Search highlight injected by C# backend ── */
         .search-highlight {
-            background-color: yellow;
-            color: black;
-            font-weight: bold;
-            padding: 2px;
+            background-color: yellow !important;
+            color: #000 !important;
+            font-weight: bold !important;
+            padding: 1px 3px;
             border-radius: 2px;
         }
 
-        
+        /* ── View button rendered inside GridView cells ── */
+        .grid-table tr td input[type="button"],
+        .grid-table tr td a.btn,
+        .grid-table tr td .btn {
+            display: inline-block;
+            padding: 4px 16px;
+            background: #1a73e8;
+            color: #fff !important;
+            border: none;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.12s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .grid-table tr td input[type="button"]:hover,
+        .grid-table tr td a.btn:hover,
+        .grid-table tr td .btn:hover {
+            background: #1558b0;
+        }
+
+        /* ── GridView pager row ── */
+        .grid-table tr.gridview-pager td,
+        .grid-table tr[align="center"] td {
+            background-color: #f8f9fa !important;
+            text-align: center;
+            border: none;
+        }
 
     </style>
 
     <script type="text/javascript">
-
 // @ts-nocheck
 
 function toggleFilterTextbox(id) {
-
-    var box =
-        document.getElementById(id);
-
-    if (!box)
-        return;
-
-    if (
-        box.style.display === "none" ||
-        box.style.display === ""
-    ) {
-
-        box.style.display = "block";
-    }
-    else {
-
-        box.style.display = "none";
-    }
+    var box = document.getElementById(id);
+    if (!box) return;
+    box.style.display =
+        (box.style.display === "none" || box.style.display === "")
+            ? "block" : "none";
 }
 
 function toggleColumnFilter() {
-
-    var panel =
-        document.getElementById("columnPanel");
-
-    if (!panel)
-        return;
-
-    if (
-        panel.style.display === "none" ||
-        panel.style.display === ""
-    ) {
-
-        panel.style.display = "block";
-    }
-    else {
-
-        panel.style.display = "none";
-    }
+    var panel = document.getElementById("columnPanel");
+    if (!panel) return;
+    panel.style.display =
+        (panel.style.display === "none" || panel.style.display === "")
+            ? "block" : "none";
 }
 
 function filterMetadataFilters() {
-
-    var input =
-        document.getElementById("txtMetadataSearch");
-
-    if (!input)
-        return;
-
-    var filter =
-        input.value.toLowerCase();
-
-    var rows =
-        document.getElementsByClassName("filter-row");
-
+    var input = document.getElementById("txtMetadataSearch");
+    if (!input) return;
+    var filter = input.value.toLowerCase();
+    var rows = document.getElementsByClassName("filter-row");
     for (var i = 0; i < rows.length; i++) {
-
-        var row = rows[i];
-
-        var text =
-            row.innerText.toLowerCase();
-
-        if (text.indexOf(filter) > -1) {
-
-            row.style.display = "";
-        }
-        else {
-
-            row.style.display = "none";
-        }
+        rows[i].style.display =
+            (rows[i].innerText.toLowerCase().indexOf(filter) > -1)
+                ? "" : "none";
     }
 }
 
-function syncHorizontalScroll(source, targetId) {
-
-    var target =
-        document.getElementById(targetId);
-
-    if (!target)
-        return;
-
-    target.scrollLeft =
-        source.scrollLeft;
-}
-
 function selectAllColumns(selectAll) {
-
-    var container =
-        document.getElementById("columnPanel");
-
-    if (!container)
-        return;
-
-    var checkboxes =
-        container.querySelectorAll(
-            "input[type='checkbox']"
-        );
-
+    var container = document.getElementById("columnPanel");
+    if (!container) return;
+    var checkboxes = container.querySelectorAll("input[type='checkbox']");
     for (var i = 0; i < checkboxes.length; i++) {
-
-        checkboxes[i].checked =
-            selectAll;
+        checkboxes[i].checked = selectAll;
     }
 }
 
 function scrollToFocusedColumn() {
+    var target = document.querySelector(".auto-focus-column");
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+}
 
-    var target =
-        document.querySelector(
-            ".auto-focus-column");
+/* kept for backward compatibility */
+function syncHorizontalScroll(source, targetId) {
+    var target = document.getElementById(targetId);
+    if (!target) return;
+    target.scrollLeft = source.scrollLeft;
+}
 
-    if (!target)
-        return;
+function wireScrollSync() {
+    var results = document.getElementById("mainResults");
+    var topTrack = document.getElementById("topScroll");
+    var botTrack = document.getElementById("bottomScroll");
+    var topInner = document.getElementById("topScrollContent");
+    var botInner = document.getElementById("bottomScrollContent");
 
-    target.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest"
-    });
+    if (!results) return;
+
+    function refreshWidth() {
+        var w = results.scrollWidth + "px";
+        if (topInner) topInner.style.width = w;
+        if (botInner) botInner.style.width = w;
+    }
+    refreshWidth();
+
+    var syncing = false;
+
+    function onResults() {
+        if (syncing) return; syncing = true;
+        if (topTrack) topTrack.scrollLeft = results.scrollLeft;
+        if (botTrack) botTrack.scrollLeft = results.scrollLeft;
+        syncing = false;
+    }
+    function onTop() {
+        if (syncing) return; syncing = true;
+        results.scrollLeft = topTrack.scrollLeft;
+        if (botTrack) botTrack.scrollLeft = topTrack.scrollLeft;
+        syncing = false;
+    }
+    function onBottom() {
+        if (syncing) return; syncing = true;
+        results.scrollLeft = botTrack.scrollLeft;
+        if (topTrack) topTrack.scrollLeft = botTrack.scrollLeft;
+        syncing = false;
+    }
+
+    results.addEventListener("scroll", onResults);
+    if (topTrack) topTrack.addEventListener("scroll", onTop);
+    if (botTrack) botTrack.addEventListener("scroll", onBottom);
+    window.addEventListener("resize", refreshWidth);
 }
 
 window.onload = function () {
-
-    var results =
-        document.getElementById("mainResults");
-
-    var topScroll =
-        document.getElementById("topScroll");
-
-    var topScrollContent =
-        document.getElementById("topScrollContent");
-
-    if (
-        results &&
-        topScroll &&
-        topScrollContent
-    ) {
-        topScrollContent.style.width =
-            results.scrollWidth + "px";
-
-        topScroll.onscroll = function () {
-
-            results.scrollLeft =
-                topScroll.scrollLeft;
-        };
-    }
-
+    wireScrollSync();
     scrollToFocusedColumn();
-};
 
+    /*
+     * JS reinforcement for maroon header:
+     * ASP.NET GridView with AutoGenerateColumns may not emit <thead>,
+     * so the header <tr> lives inside <tbody>. We find it by looking
+     * for the first row that contains <th> elements and force-apply
+     * inline styles so no Bootstrap rule can override them.
+     */
+    var table = document.querySelector(".grid-table");
+    if (!table) return;
+
+    var allRows = table.querySelectorAll("tr");
+    for (var i = 0; i < allRows.length; i++) {
+        var ths = allRows[i].querySelectorAll("th");
+        if (ths.length > 0) {
+            allRows[i].style.backgroundColor = "#7a0616";
+            for (var j = 0; j < ths.length; j++) {
+                ths[j].style.backgroundColor = "#7a0616";
+                ths[j].style.color = "#ffffff";
+                ths[j].style.whiteSpace = "nowrap";
+            }
+            break;
+        }
+    }
+};
 </script>
 
-    <div class="container-fluid mt-4">
+    <!-- ══════════════════════════════
+         SEARCH HERO (centred)
+    ══════════════════════════════ -->
+    <div class="search-hero">
 
-        <div class="card-box">
+        <div class="search-hero-title">
+            Enterprise Metadata Search Engine
+        </div>
 
-            <div class="search-header">
-                Enterprise Metadata Search Engine
+        <div class="search-row">
+
+            <div class="search-bar-wrap">
+                <span class="search-icon">&#128269;</span>
+                <asp:TextBox ID="txtSearch"
+                    runat="server"
+                    CssClass="form-control"
+                    placeholder="Search documents, metadata…">
+                </asp:TextBox>
             </div>
 
-            <div class="row">
-
-                <div class="col-md-8">
-
-                    <label>
-                        Keyword Search
-                    </label>
-
-                    <asp:TextBox ID="txtSearch"
-                        runat="server"
-                        CssClass="form-control">
-                    </asp:TextBox>
-
-                </div>
-
-                <div class="col-md-2">
-
-                    <label>
-                        Search Mode
-                    </label>
-
-                    <asp:RadioButtonList ID="rblSearchMode"
-                        runat="server">
-
-                        <asp:ListItem Text="UNION"
-                            Value="OR"
-                            Selected="True">
-                        </asp:ListItem>
-
-                        <asp:ListItem Text="INTERSECTION"
-                            Value="AND">
-                        </asp:ListItem>
-
-                    </asp:RadioButtonList>
-
-                </div>
-
-                <div class="col-md-2 d-flex align-items-end">
-
-                    <asp:Button ID="btnSearch"
-                        runat="server"
-                        Text="Search"
-                        CssClass="btn btn-danger w-100"
-                        OnClick="btnSearch_Click" />
-
-                </div>
-
+            <div class="mode-wrap">
+                <asp:RadioButtonList ID="rblSearchMode"
+                    runat="server"
+                    RepeatDirection="Vertical">
+                    <asp:ListItem Text="UNION"        Value="OR"  Selected="True" />
+                    <asp:ListItem Text="INTERSECTION" Value="AND" />
+                </asp:RadioButtonList>
             </div>
 
-            <button type="button"
-                class="btn btn-secondary mt-4"
-                onclick="toggleColumnFilter()">
+            <asp:Button ID="btnSearch"
+                runat="server"
+                Text="Search"
+                CssClass="btn-search-hero"
+                OnClick="btnSearch_Click" />
 
-                Show Column Filters
+        </div>
 
-            </button>
+        <button type="button"
+            class="btn-col-toggle"
+            onclick="toggleColumnFilter()">
+            &#9776;&nbsp; Show Column Filters
+        </button>
 
-            <div id="columnPanel"
-                class="column-panel">
+        <div id="columnPanel" class="column-panel">
 
-                <h5>
-                    Column Visibility
-                </h5>
+            <h5>Column Visibility</h5>
 
-                <div class="column-filter-wrapper">
+            <div class="column-filter-wrapper">
+                <asp:CheckBoxList ID="cblColumns"
+                    runat="server"
+                    RepeatDirection="Horizontal"
+                    RepeatLayout="Flow"
+                    CssClass="checkbox-list">
+                </asp:CheckBoxList>
+            </div>
 
-                    <asp:CheckBoxList ID="cblColumns"
-                        runat="server"
-                        RepeatDirection="Horizontal"
-                        RepeatLayout="Flow"
-                        CssClass="checkbox-list">
-                    </asp:CheckBoxList>
-
-                </div>
-
-                <br />
-
-                <div class="row">
-
-                    <div class="col-md-4">
-
-                        <button type="button"
-                            class="btn btn-success w-100"
-                            onclick="selectAllColumns(true)">
-
-                            Select All
-
-                        </button>
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <button type="button"
-                            class="btn btn-secondary w-100"
-                            onclick="selectAllColumns(false)">
-
-                            Clear All
-
-                        </button>
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <asp:Button ID="btnApplyColumns"
-                            runat="server"
-                            Text="Apply Columns"
-                            CssClass="btn btn-primary w-100"
-                            OnClick="btnApplyColumns_Click" />
-
-                    </div>
-
-                </div>
-
+            <div class="column-panel-actions">
+                <button type="button" class="btn btn-success"   onclick="selectAllColumns(true)">Select All</button>
+                <button type="button" class="btn btn-secondary" onclick="selectAllColumns(false)">Clear All</button>
+                <asp:Button ID="btnApplyColumns"
+                    runat="server"
+                    Text="Apply Columns"
+                    CssClass="btn btn-primary"
+                    OnClick="btnApplyColumns_Click" />
             </div>
 
         </div>
 
-        <div class="layout-wrapper">
+    </div><!-- /search-hero -->
 
-            <div class="filter-sidebar">
+    <!-- ══════════════════════════════
+         TWO-COLUMN LAYOUT
+    ══════════════════════════════ -->
+    <div class="layout-wrapper">
 
-                <h5>
-                    Metadata Filters
-                </h5>
+        <!-- LEFT: Metadata Sidebar -->
+        <div class="filter-sidebar">
 
-                <div class="metadata-filter-search">
+            <h5>Metadata Filters</h5>
 
-                    <input type="text"
-                        id="txtMetadataSearch"
-                        class="form-control"
-                        placeholder="Search metadata filters..."
-                        onkeyup="filterMetadataFilters()" />
+            <div class="metadata-filter-search">
+                <input type="text"
+                    id="txtMetadataSearch"
+                    placeholder="Search metadata filters…"
+                    onkeyup="filterMetadataFilters()" />
+            </div>
 
+            <div class="metadata-scroll-area">
+                <asp:PlaceHolder ID="phDynamicFilters" runat="server" />
+            </div>
+
+            <div class="metadata-filter-footer">
+                <asp:Button ID="btnApplyFilters"
+                    runat="server"
+                    Text="Apply Metadata Filters"
+                    CssClass="btn-apply-dark"
+                    OnClick="btnApplyFilters_Click" />
+            </div>
+
+        </div><!-- /filter-sidebar -->
+
+        <!-- RIGHT: Results -->
+        <div class="main-results">
+            <div class="results-card">
+
+                <asp:Label ID="lblStatus"
+                    runat="server"
+                    CssClass="status-label">
+                </asp:Label>
+
+                <!-- TOP sync scrollbar -->
+                <div class="scroll-track scroll-track-top" id="topScroll">
+                    <div id="topScrollContent"></div>
                 </div>
 
-                <div class="metadata-scroll-area">
+                <!-- Table viewport -->
+                <div class="results-wrapper" id="mainResults">
 
-                    <asp:PlaceHolder ID="phDynamicFilters"
-                        runat="server">
-                    </asp:PlaceHolder>
-
-                </div>
-
-                <div class="metadata-filter-footer">
-
-                    <asp:Button ID="btnApplyFilters"
+                    <asp:GridView ID="gvDocuments"
                         runat="server"
-                        Text="Apply Metadata Filters"
-                        CssClass="btn btn-dark w-100"
-                        OnClick="btnApplyFilters_Click" />
+                        CssClass="grid-table"
+                        AutoGenerateColumns="True"
+                        GridLines="Both"
+                        BorderStyle="None"
+                        BorderWidth="0"
+                        EnableViewState="false"
+                        AllowPaging="true"
+                        PageSize="100"
+                        OnPageIndexChanging="gvDocuments_PageIndexChanging">
+                    </asp:GridView>
 
+                </div>
+
+                <!-- BOTTOM sync scrollbar -->
+                <div class="scroll-track scroll-track-bottom" id="bottomScroll">
+                    <div id="bottomScrollContent"></div>
                 </div>
 
             </div>
+        </div><!-- /main-results -->
 
-            <div class="main-results">
-
-                <div class="card-box">
-
-                    <asp:Label ID="lblStatus"
-                        runat="server"
-                        ForeColor="Green"
-                        Font-Bold="true">
-                    </asp:Label>
-
-                    <br />
-                    <br />
-
-                    <div class="sticky-horizontal-scroll"
-                        id="topScroll">
-
-                        <div id="topScrollContent"></div>
-
-                    </div>
-
-                    <div class="results-wrapper"
-                        id="mainResults"
-                        onscroll="syncHorizontalScroll(this, 'topScroll')">
-
-                        <asp:GridView ID="gvDocuments"
-                            runat="server"
-                            CssClass="grid-table"
-                            AutoGenerateColumns="True"
-                            GridLines="Both"
-                            BorderStyle="None"
-                            BorderWidth="0"
-                            EnableViewState="false"
-                            AllowPaging="true"
-                            PageSize="100"
-                            OnPageIndexChanging="gvDocuments_PageIndexChanging">
-
-                        </asp:GridView>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
+    </div><!-- /layout-wrapper -->
 
 </asp:Content>
