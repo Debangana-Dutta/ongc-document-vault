@@ -122,6 +122,9 @@
         }
 
         .grid-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
             background-color: #7a0616;
             color: white;
             padding: 12px;
@@ -142,6 +145,27 @@
             font-size: 0.9rem;
             background-color: white;
             min-width: 180px;
+        }
+
+        /*FREEZE FILE NAME COLUMN */
+
+        .grid-table th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            background-color: #7a0616;
+            min-width: 260px;
+        }
+
+        .grid-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            background-color: white;
+            min-width: 260px;
+            max-width: 260px;
+            word-break: break-word;
+            box-shadow: 2px 0 6px rgba(0,0,0,0.08);
         }
 
         .column-panel {

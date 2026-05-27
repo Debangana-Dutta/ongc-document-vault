@@ -479,19 +479,13 @@ namespace ongc_webapp
                     }
 
                     if (
-                        cb != null &&
-                        cb.Checked &&
-                        txt != null &&
-                        !string.IsNullOrWhiteSpace(txt.Text)
-                    )
+    cb != null &&
+    cb.Checked &&
+    txt != null
+)
                     {
                         string columnName =
                             cb.ID.Replace("cb_", "");
-
-                        string filterValue =
-                            txt.Text
-                            .Trim()
-                            .ToLower();
 
                         string actualValue = "";
 
@@ -500,17 +494,62 @@ namespace ongc_webapp
                         )
                         {
                             actualValue =
-                                rowMap[columnName]
-                                .ToLower();
+                                rowMap[columnName] != null
+                                ? rowMap[columnName].Trim()
+                                : "";
                         }
 
-                        if (
-                            !actualValue.Contains(
-                                filterValue)
+                        string actualLower =
+                            actualValue.ToLower();
+
+                        string filterValue =
+                            txt.Text != null
+                            ? txt.Text.Trim().ToLower()
+                            : "";
+
+                        // !NULL
+                        // SHOW ONLY NON-NULL VALUES
+
+                        if (filterValue == "!null")
+                        {
+                            if (
+                                string.IsNullOrWhiteSpace(actualLower) ||
+                                actualLower == "null"
+                            )
+                            {
+                                matches = false;
+                                break;
+                            }
+                        }
+
+                        // NULL
+                        // SHOW ONLY NULL VALUES
+
+                        else if (filterValue == "null")
+                        {
+                            if (
+                                !string.IsNullOrWhiteSpace(actualLower) &&
+                                actualLower != "null"
+                            )
+                            {
+                                matches = false;
+                                break;
+                            }
+                        }
+
+                        // NORMAL TEXT FILTER
+
+                        else if (
+                            !string.IsNullOrWhiteSpace(filterValue)
                         )
                         {
-                            matches = false;
-                            break;
+                            if (
+                                !actualLower.Contains(filterValue)
+                            )
+                            {
+                                matches = false;
+                                break;
+                            }
                         }
                     }
                 }
