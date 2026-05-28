@@ -1,24 +1,31 @@
-DROP TABLE IF EXISTS indexed_documents;
+# ONGC Document Vault
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+The ONGC Document Vault is an enterprise-level search and indexing system designed for the efficient retrieval and management of technical assets and document metadata. The application provides a robust interface for engineers and administrators to navigate complex datasets across multiple sectors and circles.
 
-CREATE TABLE indexed_documents (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+## Features
 
-    file_name TEXT NOT NULL,
-    file_path TEXT NOT NULL,
+- Advanced Metadata Search: Supports both UNION and INTERSECTION search modes for precise querying.
+- Dynamic Filter Engine: Enables granular data filtering based on location, progress, department, and other key metadata fields.
+- Optimized Data Grid: Features a high-performance, responsive table with sticky column pinning (View and File Name) to ensure readability during horizontal navigation.
+- Efficient UI/UX: Implements a clean, centered search interface with programmatic column reordering for improved workflow.
 
-    dynamic_metadata JSONB,
+## Tech Stack
 
-    uploaded_at TIMESTAMP DEFAULT NOW()
-);
+- Framework: ASP.NET WebForms (C#)
+- Frontend: HTML5, CSS3, JavaScript (Vanilla)
+- Database: SQL Server / MySQL
+- Development Environment: Visual Studio 2022
 
-CREATE INDEX idx_indexed_documents_metadata
-ON indexed_documents
-USING GIN(dynamic_metadata);
+## Setup Instructions
 
-CREATE INDEX idx_indexed_documents_file_name
-ON indexed_documents(file_name);
+1. Clone the repository:
+   git clone https://github.com/DebanganaDutta/ongc-document-vault.git
 
-CREATE INDEX idx_indexed_documents_file_path
-ON indexed_documents(file_path);
+2. Open the solution file (.sln) in Visual Studio.
+
+3. Restore NuGet packages. Ensure all dependencies are updated to the latest stable versions to address security vulnerabilities.
+
+4. Configure the database connection string in the Web.config file to match your local environment.
+
+5. Build the solution and run the application via IIS Express.
+
