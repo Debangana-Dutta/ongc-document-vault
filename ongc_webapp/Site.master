@@ -2,20 +2,21 @@
 <script runat="server">
     protected void lnkLogOut_Click(object sender, EventArgs e)
     {
-        // 1. Clear out all active session data
         Session.Abandon();
         Session.Clear();
         
-        // 2. Clear out the session identification cookie tracking
         if (Request.Cookies["ASP.NET_SessionId"] != null)
         {
             Response.Cookies["ASP.NET_SessionId"].Value = string.Empty;
             Response.Cookies["ASP.NET_SessionId"].Expires = DateTime.Now.AddMonths(-20);
         }
         
-        // 3. Force redirect the user back to the clean Login wall
         Response.Redirect("Login.aspx", true);
-    }</script><!DOCTYPE html><html lang="en"><head runat="server">
+    }
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%: Page.Title %> - ONGC Portal</title>
@@ -25,106 +26,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
     <style>
-        * {
-            font-family: 'Public Sans', sans-serif;
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-        }
-
-        body {
-            background-color: #ffffff;
-        }
-
-        /* Tightened Navbar Header Layout */
-        .ongc-foundation-header {
-            background-color: #ffffff;
-            padding: 15px 0;
-            border-bottom: 1px solid #f5f5f5;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.01);
-        }
-
-        .header-flex-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 40px;
-        }
-
-        /* Branding Block Placement */
-        .brand-logo-frame {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .brand-logo-frame img {
-            height: 70px;
-            width: auto;
-            display: block;
-            image-rendering: auto;
-        }
-
-        /* Inline Navigation Menu tracking */
-        .foundation-nav-list {
-            display: flex;
-            align-items: center;
-            list-style: none;
-            gap: 32px;
-            margin: 0;
-            padding: 0;
-        }
-
-        .foundation-nav-item a, .logout-btn-link {
-            text-decoration: none;
-            color: #7a0616;
-            font-size: 1.05rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            letter-spacing: 0.2px;
-            padding: 8px 4px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        .foundation-nav-item a:hover, .logout-btn-link:hover {
-            color: #b00c24;
-            font-weight: 600;
-        }
-
-        /* Premium Minimalist Search Loop Icon vector placement */
-        .nav-search-link {
-            color: #7a0616;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding-left: 5px;
-            background: none;
-            border: none;
-            outline: none;
-            text-decoration: none;
-        }
-        
-        .nav-search-link svg {
-            width: 26px;
-            height: 26px;
-            stroke-width: 2;
-        }
-
-        /* Minimized Viewport Margin to eliminate white gap */
-        .main-portal-body {
-            min-height: 75vh;
-            padding-top: 10px;
-        }
-    </style></head><body>
+        * { font-family: 'Public Sans', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #ffffff; }
+        .ongc-foundation-header { background-color: #ffffff; padding: 15px 0; border-bottom: 1px solid #f5f5f5; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
+        .header-flex-container { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+        .brand-logo-frame { display: flex; align-items: center; text-decoration: none; }
+        .brand-logo-frame img { height: 70px; width: auto; display: block; }
+        .foundation-nav-list { display: flex; align-items: center; list-style: none; gap: 32px; margin: 0; padding: 0; }
+        .foundation-nav-item a, .logout-btn-link { text-decoration: none; color: #7a0616; font-size: 1.05rem; font-weight: 500; transition: all 0.2s ease; letter-spacing: 0.2px; padding: 8px 4px; background: none; border: none; cursor: pointer; display: inline-block; }
+        .foundation-nav-item a:hover, .logout-btn-link:hover { color: #b00c24; font-weight: 600; }
+        .nav-search-link { color: #7a0616; display: flex; align-items: center; cursor: pointer; padding-left: 5px; background: none; border: none; outline: none; text-decoration: none; }
+        .nav-search-link svg { width: 26px; height: 26px; stroke-width: 2; }
+        .main-portal-body { min-height: 75vh; padding-top: 10px; }
+    </style>
+</head>
+<body>
     <form runat="server">
-
         <header class="ongc-foundation-header">
             <div class="header-flex-container">
-                
                 <a href="Dashboard.aspx" class="brand-logo-frame">
                     <img src="images/ongclogo.png" alt="ONGC Logo" />
                 </a>
@@ -134,7 +53,8 @@
                         <li class="foundation-nav-item"><a href="Dashboard.aspx">Home</a></li>
                         <li class="foundation-nav-item"><a href="About.aspx">About Us</a></li>
                         <li class="foundation-nav-item"><a href="Indexing.aspx">Document Search</a></li>
-                        <li class="foundation-nav-item"><a href="Upload.aspx">Document Upload</a></li>
+                        <%-- Updated Link below --%>
+                        <li class="foundation-nav-item"><a href="AdminPanel.aspx">Admin Panel</a></li>
                         <li class="foundation-nav-item"><a href="About.aspx">Contact Us</a></li>
                         <li class="foundation-nav-item">
                             <asp:LinkButton ID="lnkLogOut" runat="server" OnClick="lnkLogOut_Click" CssClass="logout-btn-link" style="font-weight: 700; color: #b00c24;">Log Out</asp:LinkButton>
@@ -147,7 +67,6 @@
                         </svg>
                     </a>
                 </nav>
-
             </div>
         </header>
 
@@ -157,5 +76,6 @@
                 </asp:ContentPlaceHolder>
             </div>
         </main>
-
-    </form></body></html>
+    </form>
+</body>
+</html>

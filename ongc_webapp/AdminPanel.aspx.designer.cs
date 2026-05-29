@@ -11,97 +11,133 @@ namespace ongc_webapp
 {
 
 
-    public partial class Indexing
+    public partial class AdminPanel
     {
 
         /// <summary>
-        /// txtSearch control.
+        /// txtUserName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+        protected global::System.Web.UI.WebControls.TextBox txtUserName;
 
         /// <summary>
-        /// rblSearchMode control.
+        /// txtCPF control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButtonList rblSearchMode;
+        protected global::System.Web.UI.WebControls.TextBox txtCPF;
 
         /// <summary>
-        /// btnSearch control.
+        /// txtDept control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSearch;
+        protected global::System.Web.UI.WebControls.TextBox txtDept;
 
         /// <summary>
-        /// cblColumns control.
+        /// btnAddUser control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBoxList cblColumns;
+        protected global::System.Web.UI.WebControls.Button btnAddUser;
 
         /// <summary>
-        /// btnApplyColumns control.
+        /// lblAdminFeedback control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnApplyColumns;
+        protected global::System.Web.UI.WebControls.Label lblAdminFeedback;
 
         /// <summary>
-        /// lblAccessBadge control.
+        /// gvUsers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblAccessBadge;
+        protected global::System.Web.UI.WebControls.GridView gvUsers;
 
         /// <summary>
-        /// phDynamicFilters control.
+        /// ddlSelectUser control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder phDynamicFilters;
+        protected global::System.Web.UI.WebControls.DropDownList ddlSelectUser;
 
         /// <summary>
-        /// btnApplyFilters control.
+        /// cblDatasets control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnApplyFilters;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblDatasets;
 
         /// <summary>
-        /// lblStatus control.
+        /// cblMetadataColumns control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblStatus;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblMetadataColumns;
 
         /// <summary>
-        /// gvDocuments control.
+        /// btnSaveAccessPolicy control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvDocuments;
+        protected global::System.Web.UI.WebControls.Button btnSaveAccessPolicy;
+
+        /// <summary>
+        /// lblPolicyFeedback control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPolicyFeedback;
+
+        /// <summary>
+        /// filePayload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload filePayload;
+
+        /// <summary>
+        /// btnIngestData control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnIngestData;
+
+        /// <summary>
+        /// lblStatusFeedback control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblStatusFeedback;
     }
 }

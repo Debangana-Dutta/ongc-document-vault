@@ -239,7 +239,7 @@
     <Content Include="Scripts\WebForms\WebForms.js" />
     <Content Include="Scripts\WebForms\WebParts.js" />
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
-    <Content Include="Upload.aspx" />
+    <Content Include="AdminPanel.aspx" />
     <Content Include="ViewFile.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
@@ -313,12 +313,12 @@
     <Compile Include="Site.master.designer.cs">
       <DependentUpon>Site.master</DependentUpon>
     </Compile>
-    <Compile Include="Upload.aspx.cs">
-      <DependentUpon>Upload.aspx</DependentUpon>
+    <Compile Include="AdminPanel.aspx.cs">
+      <DependentUpon>AdminPanel.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Upload.aspx.designer.cs">
-      <DependentUpon>Upload.aspx</DependentUpon>
+    <Compile Include="AdminPanel.aspx.designer.cs">
+      <DependentUpon>AdminPanel.aspx</DependentUpon>
     </Compile>
     <Compile Include="ViewFile.aspx.cs">
       <DependentUpon>ViewFile.aspx</DependentUpon>
