@@ -255,13 +255,13 @@
 
 <div class="admin-page">
 
-    <div class="admin-page-title">⚙ ONGC Admin Panel</div>
+    <div class="admin-page-title">ONGC Admin Panel</div>
 
     <!-- ══════════════════════════════════════════
          SECTION 1 – USER MANAGEMENT
     ══════════════════════════════════════════ -->
     <div class="admin-card">
-        <h4>👤 User Management</h4>
+        <h4>User Management</h4>
 
         <div class="form-row">
             <div class="form-group">
@@ -299,7 +299,7 @@
          SECTION 2 – ACCESS POLICY
     ══════════════════════════════════════════ -->
     <div class="admin-card">
-        <h4>🔐 Dataset & Metadata Access Policy</h4>
+        <h4>Dataset &amp; Metadata Access Policy</h4>
 
         <p style="font-size:0.875rem;color:#5f6368;margin-bottom:16px;">
             Select a user, then choose which <strong>Datasets</strong> they can search
@@ -321,7 +321,7 @@
 
             <!-- LEFT: Dataset access -->
             <div class="policy-col">
-                <h5>📂 Allowed Datasets (Excel Sources)</h5>
+                <h5>Allowed Datasets (Excel Sources)</h5>
                 <div class="checkbox-scroll-box">
                     <asp:CheckBoxList ID="cblDatasets" runat="server"
                         RepeatDirection="Vertical"
@@ -335,7 +335,7 @@
 
             <!-- RIGHT: Metadata column visibility -->
             <div class="policy-col">
-                <h5>🏷 Visible Metadata Columns</h5>
+                <h5>Visible Metadata Columns</h5>
                 <div class="checkbox-scroll-box">
                     <asp:CheckBoxList ID="cblMetadataColumns" runat="server"
                         RepeatDirection="Vertical"
@@ -354,7 +354,7 @@
 
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
             <asp:Button ID="btnSaveAccessPolicy" runat="server"
-                Text="💾  Save Access Policy"
+                Text="Save Access Policy"
                 CssClass="btn-ongc"
                 OnClick="btnSaveAccessPolicy_Click" />
         </div>
@@ -367,7 +367,7 @@
          SECTION 3 – DOCUMENT INGESTION
     ══════════════════════════════════════════ -->
     <div class="admin-card">
-        <h4>📥 Document Ingestion (Excel Upload)</h4>
+        <h4>Document Ingestion (Excel Upload)</h4>
 
         <div class="form-row" style="align-items:center;">
             <asp:FileUpload ID="filePayload" runat="server"
