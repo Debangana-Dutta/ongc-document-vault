@@ -32,3 +32,18 @@ JOIN datasets d ON d.datasetid = uda.datasetid
 WHERE uda.userid = (SELECT id FROM users WHERE cpf = '101');
 
 INSERT INTO user_dataset_access (userid, datasetid) VALUES (2, 1);
+
+// new 
+1.ALTER TABLE users ADD CONSTRAINT uq_users_cpf UNIQUE (cpf);
+2.  **Create Dataset Lookup Table**
+    This table resolves the data type mismatch error by providing an integer Primary Key (`datasetid`) for every dataset name.
+    ```sql
+    CREATE TABLE IF NOT EXISTS datasets (
+      datasetid SERIAL PRIMARY KEY,
+      datasetname TEXT NOT NULL UNIQUE
+    );
+3. INSERT INTO datasets (datasetname)
+  SELECT DISTINCT source_excel_file
+  FROM   indexed_documents
+  WHERE  source_excel_file IS NOT NULL
+ON CONFLICT (datasetname) DO NOTHING;
