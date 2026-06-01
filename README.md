@@ -1,31 +1,34 @@
-# ONGC Document Vault
+SELECT column_name FROM information_schema.columns WHERE table_name = 'user_dataset_access';
+SELECT column_name FROM information_schema.columns WHERE table_name = 'user_metadata_policy';
 
-The ONGC Document Vault is an enterprise-level search and indexing system designed for the efficient retrieval and management of technical assets and document metadata. The application provides a robust interface for engineers and administrators to navigate complex datasets across multiple sectors and circles.
+ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
+-- Use the exact column names confirmed by your SELECT query
+CREATE INDEX IF NOT EXISTS idx_uda_cpf ON user_dataset_access (userid);
+CREATE INDEX IF NOT EXISTS idx_ump_cpf ON user_metadata_policy (user_cpf);
+CREATE INDEX IF NOT EXISTS idx_docs_source ON indexed_documents (source_excel_file);
 
-## Features
+SELECT d.datasetname AS dataset_name
+FROM user_dataset_access uda
+JOIN datasets d ON d.datasetid = uda.datasetid
+WHERE uda.userid = (SELECT id FROM users WHERE cpf = '101');
 
-- Advanced Metadata Search: Supports both UNION and INTERSECTION search modes for precise querying.
-- Dynamic Filter Engine: Enables granular data filtering based on location, progress, department, and other key metadata fields.
-- Optimized Data Grid: Features a high-performance, responsive table with sticky column pinning (View and File Name) to ensure readability during horizontal navigation.
-- Efficient UI/UX: Implements a clean, centered search interface with programmatic column reordering for improved workflow.
+SELECT * FROM datasets;
+SELECT d.datasetname AS dataset_name
+FROM user_dataset_access uda
+JOIN datasets d ON d.datasetid = uda.datasetid
+WHERE uda.userid = 2;
+SELECT * FROM user_dataset_access;
 
-## Tech Stack
+SELECT d.datasetname AS dataset_name
+FROM user_dataset_access uda
+JOIN datasets d ON d.datasetid = uda.datasetid
+WHERE uda.userid = 1;
+INSERT INTO user_dataset_access (userid, datasetid) VALUES (2, 1);
+INSERT INTO datasets (datasetid, datasetname) VALUES (1, 'Sample_Dataset_Name');
+SELECT * FROM datasets;
+SELECT d.datasetname AS dataset_name
+FROM user_dataset_access uda
+JOIN datasets d ON d.datasetid = uda.datasetid
+WHERE uda.userid = (SELECT id FROM users WHERE cpf = '101');
 
-- Framework: ASP.NET WebForms (C#)
-- Frontend: HTML5, CSS3, JavaScript (Vanilla)
-- Database: SQL Server / MySQL
-- Development Environment: Visual Studio 2022
-
-## Setup Instructions
-
-1. Clone the repository:
-   git clone https://github.com/DebanganaDutta/ongc-document-vault.git
-
-2. Open the solution file (.sln) in Visual Studio.
-
-3. Restore NuGet packages. Ensure all dependencies are updated to the latest stable versions to address security vulnerabilities.
-
-4. Configure the database connection string in the Web.config file to match your local environment.
-
-5. Build the solution and run the application via IIS Express.
-
+INSERT INTO user_dataset_access (userid, datasetid) VALUES (2, 1);
