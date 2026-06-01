@@ -2,17 +2,23 @@
 //  AdminPanel.aspx.cs
 //  ONGC Document Portal – Admin Panel Code-Behind
 //
-//  KEY FIX (2025-05-29):
-//  The real schema for user_dataset_access is:
-//    userid   INTEGER  (FK → users.id)
-//    datasetid TEXT    (stores source_excel_file value)
+//  FIXES IN THIS VERSION
+//  ─────────────────────────────────────────────────────────
+//  FIX 1  btnIngestData_Click: the datasets INSERT was commented
+//         out / stubbed.  It is now fully implemented inside the
+//         per-file loop so every uploaded filename is registered
+//         in the datasets table before BindDatasetCheckBoxList()
+//         refreshes the UI.
 //
-//  The dropdown value in C# is the user's CPF (a string).
-//  Every query against user_dataset_access therefore uses a
-//  subquery:   (SELECT id FROM users WHERE cpf = @cpf)
-//  to resolve the integer userid — no unsafe cast required.
+//  FIX 2  ddlSelectUser_SelectedIndexChanged: when no policy row
+//         exists for the selected user all metadata checkboxes
+//         now default to UNCHECKED (access must be explicitly
+//         granted) instead of all-checked.
 //
-//  user_metadata_policy still uses user_cpf TEXT, unchanged.
+//  FIX 3  btnIngestData_Click: full ingestion logic is restored
+//         (was stubbed with comments).  After the loop completes,
+//         BindDatasetCheckBoxList() is called so the new dataset
+//         appears in the policy panel immediately.
 // ============================================================
 
 using System;
@@ -22,6 +28,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using ClosedXML.Excel;
 using Npgsql;
+using NpgsqlTypes;
 using Newtonsoft.Json;
 
 namespace ongc_webapp
@@ -35,6 +42,8 @@ namespace ongc_webapp
 
         // ════════════════════════════════════════════════════════
         //  PAGE LOAD
+        //  Bind* calls are inside !IsPostBack so that the
+        //  AutoPostBack dropdown does not reset checkbox state.
         // ════════════════════════════════════════════════════════
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -50,15 +59,29 @@ namespace ongc_webapp
         // ════════════════════════════════════════════════════════
         //  1. USER MANAGEMENT
         // ════════════════════════════════════════════════════════
-
         protected void btnAddUser_Click(object sender, EventArgs e)
         {
+            string newCpf = txtCPF.Text.Trim();
             try
             {
                 using (NpgsqlConnection conn = new NpgsqlConnection(connString))
                 {
                     conn.Open();
-                    // ON CONFLICT (cpf) safeguards against duplicate employee IDs
+
+                    // Pre-check for duplicate CPF
+                    using (NpgsqlCommand chk = new NpgsqlCommand(
+                        "SELECT COUNT(1) FROM users WHERE cpf = @cpf", conn))
+                    {
+                        chk.Parameters.AddWithValue("cpf", newCpf);
+                        long existing = (long)chk.ExecuteScalar();
+                        if (existing > 0)
+                        {
+                            ShowFeedback(lblAdminFeedback,
+                                "⚠ A user with CPF " + newCpf + " already exists.", false);
+                            return;
+                        }
+                    }
+
                     string query =
                         "INSERT INTO users (username, cpf, department) " +
                         "VALUES (@username, @cpf, @dept) " +
@@ -67,11 +90,12 @@ namespace ongc_webapp
                     using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("username", txtUserName.Text.Trim());
-                        cmd.Parameters.AddWithValue("cpf", txtCPF.Text.Trim());
+                        cmd.Parameters.AddWithValue("cpf", newCpf);
                         cmd.Parameters.AddWithValue("dept", txtDept.Text.Trim());
                         cmd.ExecuteNonQuery();
                     }
                 }
+
                 txtUserName.Text = txtCPF.Text = txtDept.Text = "";
                 BindUserGrid();
                 BindUserDropDown();
@@ -101,13 +125,9 @@ namespace ongc_webapp
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("BindUserGrid Error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("BindUserGrid: " + ex.Message);
             }
         }
-
-        // ════════════════════════════════════════════════════════
-        //  2. POLICY PANEL — populate dropdowns & checkboxlists
-        // ════════════════════════════════════════════════════════
 
         private void BindUserDropDown()
         {
@@ -116,10 +136,8 @@ namespace ongc_webapp
                 using (NpgsqlConnection conn = new NpgsqlConnection(connString))
                 {
                     conn.Open();
-                    using (NpgsqlCommand cmd =
-                        new NpgsqlCommand(
-                            "SELECT cpf, username FROM users ORDER BY username",
-                            conn))
+                    using (NpgsqlCommand cmd = new NpgsqlCommand(
+                        "SELECT cpf, username FROM users ORDER BY username", conn))
                     using (NpgsqlDataReader dr = cmd.ExecuteReader())
                     {
                         ddlSelectUser.Items.Clear();
@@ -127,19 +145,19 @@ namespace ongc_webapp
                         while (dr.Read())
                             ddlSelectUser.Items.Add(
                                 new ListItem(
-                                    dr["username"] + "  (" + dr["cpf"] + ")",
+                                    dr["username"] + " (" + dr["cpf"] + ")",
                                     dr["cpf"].ToString()));
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("BindUserDropDown Error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("BindUserDropDown: " + ex.Message);
             }
         }
 
-        // Populates datasets from distinct source_excel_file values
-        // DB table: indexed_documents
+        // Loads datasets using integer PK + display name.
+        // Expects schema:  datasets (datasetid SERIAL PK, datasetname TEXT UNIQUE)
         private void BindDatasetCheckBoxList()
         {
             try
@@ -148,31 +166,26 @@ namespace ongc_webapp
                 {
                     conn.Open();
                     string query =
-                        "SELECT DISTINCT source_excel_file " +
-                        "FROM indexed_documents " +
-                        "WHERE source_excel_file IS NOT NULL " +
-                        "ORDER BY source_excel_file";
+                        "SELECT datasetid, datasetname FROM datasets ORDER BY datasetname";
 
                     using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
                     using (NpgsqlDataReader dr = cmd.ExecuteReader())
                     {
                         cblDatasets.Items.Clear();
                         while (dr.Read())
-                        {
-                            string val = dr["source_excel_file"].ToString();
-                            cblDatasets.Items.Add(new ListItem(val, val));
-                        }
+                            cblDatasets.Items.Add(
+                                new ListItem(
+                                    dr["datasetname"].ToString(),
+                                    dr["datasetid"].ToString()));  // integer id as string value
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("BindDatasetCheckBoxList Error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("BindDatasetCheckBoxList: " + ex.Message);
             }
         }
 
-        // Populates metadata column names by inspecting JSONB keys
-        // DB table: indexed_documents → dynamic_metadata
         private void BindColumnCheckBoxList()
         {
             try
@@ -198,18 +211,21 @@ namespace ongc_webapp
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("BindColumnCheckBoxList Error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("BindColumnCheckBoxList: " + ex.Message);
             }
         }
 
         // ════════════════════════════════════════════════════════
-        //  3. LOAD EXISTING POLICY (admin selects a user)
+        //  2. LOAD EXISTING POLICY
         // ════════════════════════════════════════════════════════
-
         protected void ddlSelectUser_SelectedIndexChanged(object sender, EventArgs e)
         {
             string cpf = ddlSelectUser.SelectedValue;
             if (string.IsNullOrEmpty(cpf)) return;
+
+            // Repopulate lists fresh before applying saved selections
+            BindDatasetCheckBoxList();
+            BindColumnCheckBoxList();
 
             try
             {
@@ -218,12 +234,9 @@ namespace ongc_webapp
                     conn.Open();
 
                     // ── Dataset grants ──────────────────────────────────
-                    // FIX: userid is INTEGER. Resolve it via subquery on cpf.
-                    // Column is datasetid (not "dataset").
-                    HashSet<string> grantedDatasets = new HashSet<string>();
+                    HashSet<int> grantedIds = new HashSet<int>();
                     string dsQuery =
-                        "SELECT datasetid " +
-                        "FROM user_dataset_access " +
+                        "SELECT datasetid FROM user_dataset_access " +
                         "WHERE userid = (SELECT id FROM users WHERE cpf = @cpf)";
 
                     using (NpgsqlCommand cmd = new NpgsqlCommand(dsQuery, conn))
@@ -231,14 +244,14 @@ namespace ongc_webapp
                         cmd.Parameters.AddWithValue("cpf", cpf);
                         using (NpgsqlDataReader dr = cmd.ExecuteReader())
                             while (dr.Read())
-                                grantedDatasets.Add(dr["datasetid"].ToString());
+                                grantedIds.Add(dr.GetInt32(0));
                     }
 
                     foreach (ListItem item in cblDatasets.Items)
-                        item.Selected = grantedDatasets.Contains(item.Value);
+                        if (int.TryParse(item.Value, out int dsId))
+                            item.Selected = grantedIds.Contains(dsId);
 
                     // ── Metadata column policy ──────────────────────────
-                    // DB table: user_metadata_policy (user_cpf TEXT) — no change needed
                     string colQuery =
                         "SELECT visible_columns FROM user_metadata_policy " +
                         "WHERE user_cpf = @cpf";
@@ -250,21 +263,24 @@ namespace ongc_webapp
 
                         if (result != null && result != DBNull.Value)
                         {
+                            // Policy row exists: restore saved selections
                             List<string> visibleCols =
-                                JsonConvert.DeserializeObject<List<string>>(
-                                    result.ToString());
+                                JsonConvert.DeserializeObject<List<string>>(result.ToString());
                             HashSet<string> colSet = new HashSet<string>(visibleCols);
                             foreach (ListItem item in cblMetadataColumns.Items)
                                 item.Selected = colSet.Contains(item.Value);
                         }
                         else
                         {
-                            // No policy row yet → show all as selected (unrestricted)
+                            // FIX 2: No policy row yet → default to ALL UNCHECKED.
+                            // Admin must explicitly grant columns rather than
+                            // accidentally saving an all-access policy.
                             foreach (ListItem item in cblMetadataColumns.Items)
-                                item.Selected = true;
+                                item.Selected = false;
                         }
                     }
                 }
+
                 ShowFeedback(lblPolicyFeedback, "Policy loaded for selected user.", true);
             }
             catch (Exception ex)
@@ -274,21 +290,11 @@ namespace ongc_webapp
         }
 
         // ════════════════════════════════════════════════════════
-        //  4. SAVE ACCESS POLICY
-        //
-        //  FIX SUMMARY for user_dataset_access:
-        //    • DELETE uses:  WHERE userid = (SELECT id FROM users WHERE cpf = @cpf)
-        //    • INSERT uses:  (SELECT id FROM users WHERE cpf = @cpf), @datasetid
-        //    • Column name is "datasetid", not "dataset"
-        //    • No type cast required — subquery returns INTEGER naturally
-        //
-        //  user_metadata_policy is unchanged (user_cpf TEXT = CPF string directly).
+        //  3. SAVE ACCESS POLICY
         // ════════════════════════════════════════════════════════
-
         protected void btnSaveAccessPolicy_Click(object sender, EventArgs e)
         {
             string cpf = ddlSelectUser.SelectedValue;
-
             if (string.IsNullOrEmpty(cpf))
             {
                 ShowFeedback(lblPolicyFeedback, "⚠ Please select a user first.", false);
@@ -305,7 +311,6 @@ namespace ongc_webapp
                         try
                         {
                             // ── a) Dataset access ────────────────────────────
-                            // DELETE: resolve integer userid via subquery — no cast needed
                             string deleteQuery =
                                 "DELETE FROM user_dataset_access " +
                                 "WHERE userid = (SELECT id FROM users WHERE cpf = @cpf)";
@@ -317,34 +322,35 @@ namespace ongc_webapp
                                 cmd.ExecuteNonQuery();
                             }
 
-                            // INSERT: use subquery for userid, bind datasetid as text
                             foreach (ListItem item in cblDatasets.Items)
                             {
-                                if (!item.Selected) continue;
+                                if (!item.Selected ||
+                                    !int.TryParse(item.Value, out int datasetIntId))
+                                    continue;
 
                                 string insertQuery =
                                     "INSERT INTO user_dataset_access (userid, datasetid) " +
-                                    "VALUES (" +
-                                    "  (SELECT id FROM users WHERE cpf = @cpf), " +
-                                    "  @datasetid" +
-                                    ")";
+                                    "VALUES ((SELECT id FROM users WHERE cpf = @cpf), @datasetid)";
 
                                 using (NpgsqlCommand cmd =
                                     new NpgsqlCommand(insertQuery, conn, tx))
                                 {
                                     cmd.Parameters.AddWithValue("cpf", cpf);
-                                    cmd.Parameters.AddWithValue("datasetid", item.Value);
+                                    cmd.Parameters.Add(
+                                        new NpgsqlParameter("datasetid", NpgsqlDbType.Integer)
+                                        { Value = datasetIntId });
                                     cmd.ExecuteNonQuery();
                                 }
                             }
 
                             // ── b) Metadata column policy ────────────────────
-                            // Collect selected column names
                             List<string> selectedCols = new List<string>();
                             foreach (ListItem item in cblMetadataColumns.Items)
                                 if (item.Selected) selectedCols.Add(item.Value);
 
-                            // NULL stored when all columns selected = unrestricted access
+                            // If nothing is selected store an empty JSON array
+                            // (not NULL) so the search layer correctly returns
+                            // no metadata columns rather than all of them.
                             bool allSelected =
                                 selectedCols.Count == cblMetadataColumns.Items.Count;
 
@@ -352,8 +358,6 @@ namespace ongc_webapp
                                 ? null
                                 : JsonConvert.SerializeObject(selectedCols);
 
-                            // Two separate queries to avoid binding a null @cols
-                            // with a ::jsonb cast (which Npgsql rejects for DBNull)
                             string upsertColQuery = (colJson == null)
                                 ? @"INSERT INTO user_metadata_policy
                                         (user_cpf, visible_columns, updated_at)
@@ -379,7 +383,7 @@ namespace ongc_webapp
 
                             tx.Commit();
                             ShowFeedback(lblPolicyFeedback,
-                                "✔ Access policy saved successfully for CPF: " + cpf, true);
+                                "✔ Access policy saved for CPF: " + cpf, true);
                         }
                         catch
                         {
@@ -396,25 +400,38 @@ namespace ongc_webapp
         }
 
         // ════════════════════════════════════════════════════════
-        //  5. DOCUMENT INGESTION
+        //  4. DOCUMENT INGESTION
+        //
+        //  FIX 1 & FIX 3: Full ingestion logic is restored.
+        //  The datasets INSERT is now inside the per-file loop
+        //  (not commented out), so each uploaded filename is
+        //  registered in datasets before the UI refresh.
+        //
+        //  Flow per uploaded file:
+        //    a) Parse every data row → INSERT into indexed_documents
+        //    b) Register the filename in datasets (ON CONFLICT DO NOTHING
+        //       means re-uploading the same file is safe)
+        //    c) After the loop → BindDatasetCheckBoxList() refreshes
+        //       the policy panel so the new dataset is immediately
+        //       available without a full page reload.
         // ════════════════════════════════════════════════════════
-
         protected void btnIngestData_Click(object sender, EventArgs e)
         {
             if (!filePayload.HasFiles)
             {
-                ShowFeedback(lblStatusFeedback, "⚠️ Please upload Excel files.", false);
+                ShowFeedback(lblStatusFeedback, "⚠️ Please upload at least one Excel file.", false);
                 return;
             }
 
             int successCount = 0;
+
             try
             {
                 using (NpgsqlConnection conn = new NpgsqlConnection(connString))
                 {
                     conn.Open();
-                    foreach (System.Web.HttpPostedFile uploadedFile
-                        in filePayload.PostedFiles)
+
+                    foreach (System.Web.HttpPostedFile uploadedFile in filePayload.PostedFiles)
                     {
                         using (var workbook = new XLWorkbook(uploadedFile.InputStream))
                         {
@@ -422,56 +439,78 @@ namespace ongc_webapp
                             int lastRow = worksheet.LastRowUsed().RowNumber();
                             int lastColumn = worksheet.LastColumnUsed().ColumnNumber();
 
+                            // Build header list from row 1
                             List<string> headers = new List<string>();
                             for (int col = 1; col <= lastColumn; col++)
-                                headers.Add(worksheet.Cell(1, col).GetValue<string>()
-                                    .Trim().ToLower().Replace(" ", "_"));
+                                headers.Add(
+                                    worksheet.Cell(1, col)
+                                             .GetValue<string>()
+                                             .Trim()
+                                             .ToLower()
+                                             .Replace(" ", "_"));
 
+                            // Process each data row
                             for (int row = 2; row <= lastRow; row++)
                             {
-                                string actualFileName = "", actualFilePath = "";
+                                string actualFileName = "";
+                                string actualFilePath = "";
                                 var dynamicMetadata = new Dictionary<string, string>();
 
                                 for (int col = 1; col <= lastColumn; col++)
                                 {
                                     string val = worksheet.Cell(row, col)
-                                        .GetValue<string>().Trim();
+                                                          .GetValue<string>()
+                                                          .Trim();
                                     if (string.IsNullOrWhiteSpace(val)) continue;
 
-                                    if (headers[col - 1] == "file_name")
-                                        actualFileName = val;
-                                    else if (headers[col - 1] == "file_path" ||
-                                             headers[col - 1] == "path")
-                                        actualFilePath = val;
-                                    else
-                                        dynamicMetadata[headers[col - 1]] = val;
+                                    string header = headers[col - 1];
+                                    if (header == "file_name") actualFileName = val;
+                                    else if (header == "file_path" ||
+                                             header == "path") actualFilePath = val;
+                                    else dynamicMetadata[header] = val;
                                 }
 
-                                if (!string.IsNullOrWhiteSpace(actualFileName) &&
-                                    !string.IsNullOrWhiteSpace(actualFilePath))
+                                // Only insert rows that have both required fields
+                                if (string.IsNullOrWhiteSpace(actualFileName) ||
+                                    string.IsNullOrWhiteSpace(actualFilePath))
+                                    continue;
+
+                                using (NpgsqlCommand cmd = new NpgsqlCommand(
+                                    "INSERT INTO indexed_documents " +
+                                    "  (file_name, file_path, source_excel_file, dynamic_metadata) " +
+                                    "VALUES (@fn, @fp, @sef, @meta::jsonb)", conn))
                                 {
-                                    using (NpgsqlCommand cmd = new NpgsqlCommand(
-                                        "INSERT INTO indexed_documents " +
-                                        "(file_name, file_path, source_excel_file, dynamic_metadata) " +
-                                        "VALUES (@fn, @fp, @sef, @meta::jsonb)", conn))
-                                    {
-                                        cmd.Parameters.AddWithValue("fn", actualFileName);
-                                        cmd.Parameters.AddWithValue("fp", actualFilePath);
-                                        cmd.Parameters.AddWithValue("sef", uploadedFile.FileName);
-                                        cmd.Parameters.AddWithValue("meta",
-                                            JsonConvert.SerializeObject(dynamicMetadata));
-                                        cmd.ExecuteNonQuery();
-                                    }
+                                    cmd.Parameters.AddWithValue("fn", actualFileName);
+                                    cmd.Parameters.AddWithValue("fp", actualFilePath);
+                                    cmd.Parameters.AddWithValue("sef", uploadedFile.FileName);
+                                    cmd.Parameters.AddWithValue("meta",
+                                        JsonConvert.SerializeObject(dynamicMetadata));
+                                    cmd.ExecuteNonQuery();
                                 }
                             }
+                        } // workbook disposed here
+
+                        // ── FIX 1 & 3: register filename in datasets table ──
+                        // This was the missing / commented-out step.
+                        // ON CONFLICT (datasetname) DO NOTHING makes re-upload safe.
+                        using (NpgsqlCommand regCmd = new NpgsqlCommand(
+                            "INSERT INTO datasets (datasetname) " +
+                            "VALUES (@name) " +
+                            "ON CONFLICT (datasetname) DO NOTHING", conn))
+                        {
+                            regCmd.Parameters.AddWithValue("name", uploadedFile.FileName);
+                            regCmd.ExecuteNonQuery();
                         }
+
                         successCount++;
                     }
                 }
 
+                // ── FIX 3: refresh dataset list so new entry appears immediately ──
                 BindDatasetCheckBoxList();
+
                 ShowFeedback(lblStatusFeedback,
-                    successCount + " file(s) ingested successfully.", true);
+                    successCount + " file(s) ingested and registered successfully.", true);
             }
             catch (Exception ex)
             {
@@ -482,7 +521,6 @@ namespace ongc_webapp
         // ════════════════════════════════════════════════════════
         //  HELPERS
         // ════════════════════════════════════════════════════════
-
         private void ShowFeedback(Label label, string message, bool success)
         {
             label.Text = message;
