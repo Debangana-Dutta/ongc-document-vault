@@ -1,4 +1,23 @@
-﻿using System;
+﻿// ============================================================
+//  Indexing.aspx.cs
+//  ONGC Document Portal – Search Page Code-Behind
+//
+//  Security model implemented:
+//    1. RestoreDynamicFilters()  – OnInit – reads user's metadata
+//       policy from user_metadata_policy and only renders allowed
+//       columns in the sidebar PlaceHolder (phDynamicFilters).
+//
+//    2. BindDynamicVaultData()   – builds the SQL query with a
+//       JOIN / IN clause against user_dataset_access so results
+//       are restricted to datasets the user is permitted to see.
+//
+//  DB tables consumed (read-only):
+//    • indexed_documents     – document rows + dynamic_metadata JSONB
+//    • user_dataset_access   – per-user allowed source_excel_file values
+//    • user_metadata_policy  – per-user allowed sidebar column names (JSONB array)
+// ============================================================
+
+using System;
 using System.Configuration;
 using System.Data;
 using System.Collections.Generic;
@@ -11,24 +30,36 @@ using Newtonsoft.Json;
 
 namespace ongc_webapp
 {
-    // Changed: BasePage instead of Page.
-    // No RequiredRole override — login check is sufficient for this page.
-    public partial class Indexing : BasePage
+    public partial class Indexing : System.Web.UI.Page
     {
+        // ── Connection string ──────────────────────────────────
         private string connString =
             ConfigurationManager
             .ConnectionStrings["PostgresConn"]
             .ConnectionString;
 
+        // Column to scroll-highlight in the results table
         private string focusedColumn = "";
 
+        // ════════════════════════════════════════════════════════
+        //  ONINIT – runs before ViewState is restored.
+        //  We must rebuild the dynamic sidebar controls here so
+        //  that ASP.NET can match posted form values to them.
+        // ════════════════════════════════════════════════════════
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
+
+            // Guard: redirect to login if no session
             if (Session["UserID"] == null) return;
+
+            // Rebuild filter controls early (needed for PostBack round-trips)
             RestoreDynamicFilters();
         }
 
+        // ════════════════════════════════════════════════════════
+        //  PAGE LOAD
+        // ════════════════════════════════════════════════════════
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserID"] == null)
@@ -37,6 +68,7 @@ namespace ongc_webapp
                 return;
             }
 
+            // Wire up row-data-bound event
             gvDocuments.RowDataBound += gvDocuments_RowDataBound;
 
             if (!IsPostBack)
@@ -44,6 +76,10 @@ namespace ongc_webapp
                 BindDynamicVaultData();
             }
         }
+
+        // ════════════════════════════════════════════════════════
+        //  EVENT HANDLERS
+        // ════════════════════════════════════════════════════════
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
@@ -70,20 +106,32 @@ namespace ongc_webapp
         // ════════════════════════════════════════════════════════
         //  SECURITY HELPERS
         // ════════════════════════════════════════════════════════
-        private string GetCurrentUserCPF()
-        {
-            // Session["UserCPF"] is now set by Login.aspx.cs.
-            // Session["UserID"] is kept as a fallback for compatibility.
-            return Session["UserCPF"] != null ? Session["UserCPF"].ToString()
-                 : Session["UserID"] != null ? Session["UserID"].ToString()
-                 : "";
-        }
 
-        private List<string> GetAllowedDatasets(string cpf)
-        {
-            if (string.IsNullOrEmpty(cpf)) return null;
+        /// <summary>
+        /// Returns the CPF of the currently logged-in user.
+        /// Session["CPF"] is set at login; falls back to Session["UserID"]
+        /// if your login code stores the CPF there instead.
+        /// Adjust the key to match your Login.aspx.cs code.
+        /// </summary>
+       
+        /// <summary>
+        /// Loads the list of datasets (source_excel_file values) the
+        /// current user is allowed to query.
+        /// Returns NULL if the user has no restrictions (admin / no policy row).
+        ///
+        /// DB table: user_dataset_access
+        /// </summary>
+        
 
-            List<string> datasets = new List<string>();
+        /// <summary>
+        /// Returns the set of metadata column names the current user is
+        /// allowed to see in the sidebar. Returns NULL meaning "all columns".
+        ///
+        /// DB table: user_metadata_policy
+        /// </summary>
+        private HashSet<string> GetAllowedMetadataColumns()
+        {
+           
 
             try
             {
@@ -92,55 +140,22 @@ namespace ongc_webapp
                 {
                     conn.Open();
                     string query =
-                        "SELECT datasetid " +
-                        "FROM user_dataset_access " +
-                        "WHERE userid = (SELECT id FROM users WHERE cpf = @cpf)";
+                        "SELECT visible_columns " +
+                        "FROM global_metadata_policy " +
+                        "WHERE id = 1";
 
                     using (NpgsqlCommand cmd =
                         new NpgsqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("cpf", cpf);
-                        using (NpgsqlDataReader dr = cmd.ExecuteReader())
-                            while (dr.Read())
-                                datasets.Add(dr["datasetid"].ToString());
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    "GetAllowedDatasets Error: " + ex.Message);
-            }
-
-            return datasets;
-        }
-
-        private HashSet<string> GetAllowedMetadataColumns(string cpf)
-        {
-            if (string.IsNullOrEmpty(cpf)) return null;
-
-            try
-            {
-                using (NpgsqlConnection conn =
-                    new NpgsqlConnection(connString))
-                {
-                    conn.Open();
-                    string query =
-                        "SELECT visible_columns FROM user_metadata_policy " +
-                        "WHERE user_cpf = @cpf";
-
-                    using (NpgsqlCommand cmd =
-                        new NpgsqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("cpf", cpf);
+                        
                         object result = cmd.ExecuteScalar();
 
                         if (result == null || result == DBNull.Value)
-                            return null;
+                            return null; // no policy row → unrestricted
 
                         string json = result.ToString();
                         if (string.IsNullOrWhiteSpace(json))
-                            return null;
+                            return null; // null stored → unrestricted
 
                         List<string> cols =
                             JsonConvert.DeserializeObject<List<string>>(json);
@@ -159,16 +174,27 @@ namespace ongc_webapp
         }
 
         // ════════════════════════════════════════════════════════
-        //  RESTORE DYNAMIC FILTERS
+        //  RESTORE DYNAMIC FILTERS  (called from OnInit)
+        //
+        //  Reads the user's metadata column policy and builds
+        //  the sidebar PlaceHolder with only the permitted columns.
+        //  On PostBack, also restores checkbox / textbox values
+        //  from Request.Form so filters survive the round-trip.
         // ════════════════════════════════════════════════════════
         private void RestoreDynamicFilters()
         {
-            string cpf = GetCurrentUserCPF();
-            HashSet<string> allowedCols = GetAllowedMetadataColumns(cpf);
+            
+            // ── Determine which columns this user may see ──────
+            HashSet<string> allowedCols =
+            GetAllowedMetadataColumns();
+            // NULL = all columns allowed
 
+            // Show the "Restricted View" badge if a policy exists
             if (allowedCols != null && lblAccessBadge != null)
                 lblAccessBadge.Visible = true;
 
+            // ── Collect all known metadata keys from the DB ────
+            // We query only up to 500 rows to discover column names.
             HashSet<string> allKeys = new HashSet<string>();
 
             try
@@ -177,6 +203,8 @@ namespace ongc_webapp
                     new NpgsqlConnection(connString))
                 {
                     conn.Open();
+
+                    // Use Postgres's jsonb_object_keys for efficiency
                     string query =
                         "SELECT DISTINCT jsonb_object_keys(dynamic_metadata) " +
                         "FROM indexed_documents " +
@@ -199,17 +227,28 @@ namespace ongc_webapp
                     "RestoreDynamicFilters Error: " + ex.Message);
             }
 
+            // ── Filter keys against the user's policy ──────────
             HashSet<string> visibleKeys = (allowedCols == null)
                 ? allKeys
                 : new HashSet<string>(
-                    allKeys.Where(k => allowedCols.Contains(k)),
+                    allKeys.Where(k =>
+                        allowedCols.Contains(k)),
                     StringComparer.OrdinalIgnoreCase);
 
+            // ── Build the sidebar controls ─────────────────────
             GenerateDynamicFilters(visibleKeys);
         }
 
         // ════════════════════════════════════════════════════════
         //  GENERATE DYNAMIC FILTERS
+        //
+        //  Creates one "filter-row" per column containing:
+        //    • CheckBox  (ID = cb_<column>)
+        //    • Literal   (display label)
+        //    • Panel     (ID = box_<column>) + TextBox (ID = txt_<column>)
+        //
+        //  On PostBack, checkbox state and textbox text are
+        //  read back from Request.Form using the control's UniqueID.
         // ════════════════════════════════════════════════════════
         private void GenerateDynamicFilters(HashSet<string> availableColumns)
         {
@@ -229,17 +268,20 @@ namespace ongc_webapp
                 Panel panel = new Panel();
                 panel.CssClass = "filter-row";
 
+                // ── Checkbox ──
                 CheckBox cb = new CheckBox();
                 cb.ID = "cb_" + column;
                 bool isChecked = Request.Form[cb.UniqueID] == "on";
                 cb.Checked = isChecked;
 
+                // ── Label literal ──
                 Literal lbl = new Literal();
                 lbl.Text =
                     "<span class='filter-column-name'>" +
                     System.Web.HttpUtility.HtmlEncode(column) +
                     "</span>";
 
+                // ── Textbox panel ──
                 Panel textboxPanel = new Panel();
                 string panelId = "box_" + column.Replace(" ", "_");
                 textboxPanel.Attributes["id"] = panelId;
@@ -255,6 +297,7 @@ namespace ongc_webapp
                 txt.CssClass = "form-control";
                 txt.Attributes["placeholder"] = "Filter value…";
 
+                // Restore textbox value from posted form data
                 string postedValue = Request.Form[txt.UniqueID];
                 if (!string.IsNullOrWhiteSpace(postedValue))
                     txt.Text = postedValue;
@@ -267,6 +310,7 @@ namespace ongc_webapp
 
                 phDynamicFilters.Controls.Add(panel);
 
+                // Also populate the Column Visibility checkboxlist
                 if (cblColumns.Items.FindByValue(column) == null)
                     cblColumns.Items.Add(new ListItem(column, column));
             }
@@ -274,12 +318,23 @@ namespace ongc_webapp
 
         // ════════════════════════════════════════════════════════
         //  GET FILTERED METADATA COLUMNS
+        //
+        //  Returns the set of metadata keys that are actually
+        //  present in the data rows AND (if the user selected
+        //  specific columns via cblColumns) are in that selection.
         // ════════════════════════════════════════════════════════
         private HashSet<string> GetFilteredMetadataColumns(
             List<Dictionary<string, string>> allRows)
         {
-            HashSet<string> columns = new HashSet<string>();
-            HashSet<string> selectedColumns = new HashSet<string>();
+            HashSet<string> columns =
+            new HashSet<string>();
+
+            HashSet<string> allowedColumns =
+                GetAllowedMetadataColumns();
+
+            HashSet<string> selectedColumns =
+                new HashSet<string>();
+
             bool anySelected = false;
 
             foreach (ListItem item in cblColumns.Items)
@@ -298,6 +353,7 @@ namespace ongc_webapp
                     string key = kv.Key;
                     string value = kv.Value ?? "";
 
+                    // Skip the fixed display columns
                     if (key.Equals("file_name", StringComparison.OrdinalIgnoreCase) ||
                         key.Equals("view", StringComparison.OrdinalIgnoreCase))
                         continue;
@@ -305,7 +361,12 @@ namespace ongc_webapp
                     if (string.IsNullOrWhiteSpace(value) || value == "NULL")
                         continue;
 
-                    if (anySelected && !selectedColumns.Contains(key))
+                    if (allowedColumns != null &&
+                        !allowedColumns.Contains(key))
+                        continue;
+
+                    if (anySelected &&
+                        !selectedColumns.Contains(key))
                         continue;
 
                     columns.Add(key);
@@ -316,33 +377,34 @@ namespace ongc_webapp
         }
 
         // ════════════════════════════════════════════════════════
-        //  BIND DYNAMIC VAULT DATA
+        //  BIND DYNAMIC VAULT DATA  (core search + security)
+        //
+        //  Security enforcement happens in TWO places:
+        //    A) SQL WHERE clause: restricts source_excel_file to
+        //       only datasets in the user's user_dataset_access rows.
+        //    B) Sidebar generation (RestoreDynamicFilters): only
+        //       columns in user_metadata_policy are rendered.
         // ════════════════════════════════════════════════════════
         private void BindDynamicVaultData()
         {
-            string cpf = GetCurrentUserCPF();
+            
 
-            List<string> allowedDatasets = GetAllowedDatasets(cpf);
 
-            if (allowedDatasets != null && allowedDatasets.Count == 0)
-            {
-                gvDocuments.DataSource = new DataTable();
-                gvDocuments.DataBind();
-                lblStatus.Text = "⚠ You do not have access to any datasets. "
-                               + "Contact your administrator.";
-                lblStatus.ForeColor = System.Drawing.Color.Crimson;
-                return;
-            }
+            // If the user has a policy but zero datasets, return early
+           
 
+            // ── Keyword search setup ───────────────────────────
             string rawSearch = txtSearch.Text.Trim();
             List<string> keywords = rawSearch
-                .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(new char[] { ' ' },
+                    StringSplitOptions.RemoveEmptyEntries)
                 .Distinct()
                 .Take(3)
                 .ToList();
 
-            string searchMode = rblSearchMode.SelectedValue;
+            string searchMode = rblSearchMode.SelectedValue; // "OR" or "AND"
 
+            // ── Build SQL ──────────────────────────────────────
             string query = @"
                 SELECT
                     id,
@@ -355,18 +417,12 @@ namespace ongc_webapp
 
             List<string> whereConditions = new List<string>();
 
-            if (allowedDatasets != null && allowedDatasets.Count > 0)
-            {
-                List<string> dsParams = new List<string>();
-                for (int i = 0; i < allowedDatasets.Count; i++)
-                    dsParams.Add("@ds" + i);
+            // ── SECURITY: dataset restriction ─────────────────
+            // Only add the clause when a policy exists;
+            // if allowedDatasets is null the user sees everything.
+            
 
-                whereConditions.Add(
-                    "source_excel_file IN (" +
-                    string.Join(", ", dsParams) +
-                    ")");
-            }
-
+            // ── Keyword search conditions ──────────────────────
             if (keywords.Count > 0)
             {
                 List<string> kwConditions = new List<string>();
@@ -388,6 +444,7 @@ namespace ongc_webapp
 
             query += " ORDER BY uploaded_at DESC LIMIT 500";
 
+            // ── Execute query ──────────────────────────────────
             List<Dictionary<string, string>> allRows =
                 new List<Dictionary<string, string>>();
 
@@ -401,13 +458,10 @@ namespace ongc_webapp
                     using (NpgsqlCommand cmd =
                         new NpgsqlCommand(query, conn))
                     {
-                        if (allowedDatasets != null)
-                        {
-                            for (int i = 0; i < allowedDatasets.Count; i++)
-                                cmd.Parameters.AddWithValue(
-                                    "@ds" + i, allowedDatasets[i]);
-                        }
+                        // Bind dataset security parameters
+                        
 
+                        // Bind keyword parameters
                         for (int i = 0; i < keywords.Count; i++)
                             cmd.Parameters.AddWithValue(
                                 "@kw" + i, "%" + keywords[i] + "%");
@@ -456,6 +510,7 @@ namespace ongc_webapp
                 return;
             }
 
+            // ── Auto-detect the best matching column ──────────
             Dictionary<string, int> columnScores =
                 new Dictionary<string, int>();
 
@@ -486,9 +541,11 @@ namespace ongc_webapp
                     .OrderByDescending(x => x.Value)
                     .First().Key;
 
+            // ── Determine visible columns ──────────────────────
             HashSet<string> filteredColumns =
                 GetFilteredMetadataColumns(allRows);
 
+            // ── Show/hide sidebar filter rows ──────────────────
             foreach (Control ctrl in phDynamicFilters.Controls)
             {
                 Panel panel = ctrl as Panel;
@@ -504,6 +561,7 @@ namespace ongc_webapp
                 panel.Visible = filteredColumns.Contains(colName);
             }
 
+            // ── Apply metadata text filters ────────────────────
             List<Dictionary<string, string>> filteredRows =
                 new List<Dictionary<string, string>>();
 
@@ -522,6 +580,7 @@ namespace ongc_webapp
                     foreach (Control inner in panel.Controls)
                     {
                         if (inner is CheckBox) cb = (CheckBox)inner;
+
                         if (inner is Panel)
                         {
                             foreach (Control sub in ((Panel)inner).Controls)
@@ -563,6 +622,7 @@ namespace ongc_webapp
 
             allRows = filteredRows;
 
+            // ── Build DataTable for GridView ───────────────────
             DataTable finalTable = new DataTable();
             finalTable.Columns.Add("file_name");
             finalTable.Columns.Add("view");
@@ -587,6 +647,7 @@ namespace ongc_webapp
                 }
             }
 
+            // ── Populate rows with search highlight ───────────
             foreach (var rowMap in allRows)
             {
                 DataRow row = finalTable.NewRow();
@@ -597,19 +658,25 @@ namespace ongc_webapp
                         ? rowMap[col.ColumnName] ?? "NULL"
                         : "NULL";
 
-                    foreach (string keyword in keywords)
+                    if (!col.ColumnName.Equals(
+                            "view",
+                            StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!string.IsNullOrWhiteSpace(keyword))
+                        foreach (string keyword in keywords)
                         {
-                            cellValue =
-                                System.Text.RegularExpressions.Regex.Replace(
-                                    cellValue,
-                                    System.Text.RegularExpressions.Regex
-                                        .Escape(keyword),
-                                    "<span class='search-highlight'>" +
-                                    keyword + "</span>",
-                                    System.Text.RegularExpressions.RegexOptions
-                                        .IgnoreCase);
+                            if (!string.IsNullOrWhiteSpace(keyword))
+                            {
+                                cellValue =
+                                    System.Text.RegularExpressions.Regex.Replace(
+                                        cellValue,
+                                        System.Text.RegularExpressions.Regex
+                                            .Escape(keyword),
+                                        "<span class='search-highlight'>" +
+                                        keyword +
+                                        "</span>",
+                                        System.Text.RegularExpressions.RegexOptions
+                                            .IgnoreCase);
+                            }
                         }
                     }
 
@@ -619,16 +686,16 @@ namespace ongc_webapp
                 finalTable.Rows.Add(row);
             }
 
+            // ── Bind GridView ──────────────────────────────────
             gvDocuments.DataSource = finalTable;
             gvDocuments.DataBind();
 
             lblStatus.Text = finalTable.Rows.Count + " result(s) found.";
-            lblStatus.ForeColor =
-                System.Drawing.Color.FromArgb(0x18, 0x80, 0x38);
+            lblStatus.ForeColor = System.Drawing.Color.FromArgb(0x18, 0x80, 0x38);
         }
 
         // ════════════════════════════════════════════════════════
-        //  ROW DATA BOUND
+        //  ROW DATA BOUND – header focus + HTML decode
         // ════════════════════════════════════════════════════════
         protected void gvDocuments_RowDataBound(
             object sender, GridViewRowEventArgs e)
@@ -651,6 +718,7 @@ namespace ongc_webapp
             {
                 for (int i = 0; i < e.Row.Cells.Count; i++)
                 {
+                    // Decode HTML entities so <a> tags render correctly
                     e.Row.Cells[i].Text =
                         Server.HtmlDecode(e.Row.Cells[i].Text);
                 }

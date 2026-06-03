@@ -15,31 +15,40 @@ namespace ongc_webapp
     {
 
         /// <summary>
-        /// filePayload control.
+        /// btnShowPending control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload filePayload;
+        protected global::System.Web.UI.WebControls.Button btnShowPending;
 
         /// <summary>
-        /// btnIngestData control.
+        /// btnShowAllUsers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnIngestData;
+        protected global::System.Web.UI.WebControls.Button btnShowAllUsers;
 
         /// <summary>
-        /// lblStatusFeedback control.
+        /// gvPendingUsers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblStatusFeedback;
+        protected global::System.Web.UI.WebControls.GridView gvPendingUsers;
+
+        /// <summary>
+        /// lblApprovalFeedback control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblApprovalFeedback;
 
         /// <summary>
         /// txtUserName control.
@@ -96,24 +105,6 @@ namespace ongc_webapp
         protected global::System.Web.UI.WebControls.GridView gvUsers;
 
         /// <summary>
-        /// ddlSelectUser control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSelectUser;
-
-        /// <summary>
-        /// cblDatasets control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBoxList cblDatasets;
-
-        /// <summary>
         /// cblMetadataColumns control.
         /// </summary>
         /// <remarks>
@@ -139,5 +130,32 @@ namespace ongc_webapp
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblPolicyFeedback;
+
+        /// <summary>
+        /// filePayload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload filePayload;
+
+        /// <summary>
+        /// btnIngestData control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnIngestData;
+
+        /// <summary>
+        /// lblStatusFeedback control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblStatusFeedback;
     }
 }

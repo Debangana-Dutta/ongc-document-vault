@@ -21,6 +21,7 @@
         margin: 0;
     }
 
+    /* ── Page wrapper ── */
     .admin-page {
         max-width: 1100px;
         margin: 0 auto;
@@ -36,6 +37,7 @@
         letter-spacing: -0.2px;
     }
 
+    /* ── Section cards ── */
     .admin-card {
         background: #fff;
         border-radius: 12px;
@@ -54,6 +56,7 @@
         border-bottom: 2px solid #f1f3f4;
     }
 
+    /* ── Form rows ── */
     .form-row {
         display: flex;
         flex-wrap: wrap;
@@ -97,6 +100,7 @@
         box-shadow: 0 0 0 3px rgba(122,6,22,0.08);
     }
 
+    /* ── Primary ONGC button ── */
     .btn-ongc {
         height: 40px;
         padding: 0 24px;
@@ -134,6 +138,7 @@
 
     .btn-ongc-outline:hover { background: #fdf3f5; }
 
+    /* ── GridView ── */
     .admin-grid {
         width: 100%;
         border-collapse: collapse;
@@ -161,6 +166,7 @@
     .admin-grid tr:nth-child(even) td { background: #fafbfc; }
     .admin-grid tr:nth-child(even):hover td { background: #fdf3f5; }
 
+    /* ── Policy panel: two columns ── */
     .policy-cols {
         display: flex;
         gap: 28px;
@@ -190,10 +196,16 @@
         background: #fafbfc;
     }
 
+    /* CheckBoxList items */
     .cbl-policy span,
-    .cbl-policy label { font-size: 0.875rem; color: #3c4043; }
+    .cbl-policy label {
+        font-size: 0.875rem;
+        color: #3c4043;
+    }
+
     .cbl-policy td { padding: 3px 0; }
 
+    /* ── Feedback labels ── */
     .feedback-label {
         display: block;
         font-size: 0.85rem;
@@ -202,12 +214,14 @@
         min-height: 20px;
     }
 
+    /* ── Upload area ── */
     .upload-hint {
         font-size: 0.8rem;
         color: #80868b;
         margin-top: 6px;
     }
 
+    /* ── User selector ── */
     .user-select-wrap {
         max-width: 380px;
         margin-bottom: 20px;
@@ -237,60 +251,102 @@
         background: #f1f3f4;
         margin: 20px 0;
     }
-
-    /* Step badges shown next to each card heading */
-    .step-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: #7a0616;
-        color: #fff;
-        font-size: 0.75rem;
-        font-weight: 700;
-        margin-right: 10px;
-        vertical-align: middle;
-        flex-shrink: 0;
-    }
 </style>
 
 <div class="admin-page">
 
     <div class="admin-page-title">ONGC Admin Panel</div>
 
-    <%-- ══════════════════════════════════════════
-         SECTION 1 – DOCUMENT INGESTION  (first in workflow)
-    ══════════════════════════════════════════ --%>
-    <div class="admin-card">
-        <h4><span class="step-badge">1</span>Document Ingestion (Excel Upload)</h4>
+    <!-- ══════════════════════════════════════════
+     ACCOUNT APPROVALS
+══════════════════════════════════════════ -->
+<div class="admin-card">
+    <h4>Pending Account Approvals</h4>
 
-        <div class="form-row" style="align-items:center;">
-            <asp:FileUpload ID="filePayload" runat="server"
-                AllowMultiple="true"
-                style="flex:1;" />
-            <asp:Button ID="btnIngestData" runat="server"
-                Text="Upload &amp; Ingest"
-                CssClass="btn-ongc"
-                OnClick="btnIngestData_Click" />
-        </div>
+    <div style="margin-bottom:15px;">
+        <asp:Button ID="btnShowPending"
+            runat="server"
+            Text="Show Pending"
+            CssClass="btn-ongc"
+            OnClick="btnShowPending_Click" />
 
-        <p class="upload-hint">
-            Accepted: .xlsx files. First row = headers. Required columns:
-            <code>file_name</code>, <code>file_path</code>.
-            All other columns become searchable metadata.
-        </p>
-
-        <asp:Label ID="lblStatusFeedback" runat="server"
-            CssClass="feedback-label" />
+        <asp:Button ID="btnShowAllUsers"
+            runat="server"
+            Text="Show All Users"
+            CssClass="btn-ongc-outline"
+            OnClick="btnShowAllUsers_Click"
+            Style="margin-left:10px;" />
     </div>
 
-    <%-- ══════════════════════════════════════════
-         SECTION 2 – USER MANAGEMENT  (second in workflow)
-    ══════════════════════════════════════════ --%>
+<asp:GridView ID="gvPendingUsers"
+    runat="server"
+    CssClass="admin-grid"
+    AutoGenerateColumns="False"
+    GridLines="None"
+    BorderStyle="None"
+    OnRowCommand="gvPendingUsers_RowCommand">
+
+    <Columns>
+
+            <asp:BoundField
+                DataField="username"
+                HeaderText="Username" />
+
+            <asp:BoundField
+                DataField="role"
+                HeaderText="Role" />
+
+            <asp:BoundField
+                DataField="department"
+                HeaderText="Department" />
+
+            <asp:BoundField
+                DataField="account_status"
+                HeaderText="Status" />
+
+            <asp:TemplateField HeaderText="Action">
+                <ItemTemplate>
+
+                    <asp:Button ID="btnApprove"
+                        runat="server"
+                        Text="Approve"
+                        CommandName="Approve"
+                        CommandArgument='<%# Eval("username") %>'
+                        CssClass="btn-ongc" />
+
+                    <asp:Button ID="btnReject"
+                        runat="server"
+                        Text="Reject"
+                        CommandName="Reject"
+                        CommandArgument='<%# Eval("username") %>'
+                        CssClass="btn-ongc-outline"
+                        Style="margin-left:6px;" />
+
+                    <asp:Button ID="btnResetPassword"
+                        runat="server"
+                        Text="Reset Password"
+                        CommandName="ResetPassword"
+                        CommandArgument='<%# Eval("username") %>'
+                        CssClass="btn-ongc-outline"
+                        Style="margin-left:6px;" />
+
+                </ItemTemplate>
+            </asp:TemplateField>
+
+        </Columns>
+
+    </asp:GridView>
+
+    <asp:Label ID="lblApprovalFeedback"
+        runat="server"
+        CssClass="feedback-label" />
+</div>
+
+    <!-- ══════════════════════════════════════════
+         SECTION 1 – USER MANAGEMENT
+    ══════════════════════════════════════════ -->
     <div class="admin-card">
-        <h4><span class="step-badge">2</span>User Management</h4>
+        <h4>User Management</h4>
 
         <div class="form-row">
             <div class="form-group">
@@ -324,44 +380,30 @@
             BorderStyle="None" />
     </div>
 
-    <%-- ══════════════════════════════════════════
-         SECTION 3 – ACCESS POLICY  (last in workflow)
-    ══════════════════════════════════════════ --%>
+    <!-- ══════════════════════════════════════════
+         SECTION 2 – ACCESS POLICY
+    ══════════════════════════════════════════ -->
     <div class="admin-card">
-        <h4><span class="step-badge">3</span>Dataset &amp; Metadata Access Policy</h4>
+        <h4>Dataset &amp; Metadata Access Policy</h4>
 
         <p style="font-size:0.875rem;color:#5f6368;margin-bottom:16px;">
             Select a user, then choose which <strong>Datasets</strong> they can search
             and which <strong>Metadata columns</strong> appear in their sidebar.
         </p>
 
-        <div class="user-select-wrap">
-            <label style="font-size:0.78rem;font-weight:600;text-transform:uppercase;
-                          letter-spacing:0.4px;color:#5f6368;display:block;margin-bottom:6px;">
-                Select User
-            </label>
-            <%-- AutoPostBack triggers ddlSelectUser_SelectedIndexChanged,
-                 which loads the saved policy WITHOUT resetting the lists --%>
-            <asp:DropDownList ID="ddlSelectUser" runat="server"
-                AutoPostBack="true"
-                OnSelectedIndexChanged="ddlSelectUser_SelectedIndexChanged" />
-        </div>
+        <!-- User selector (AutoPostBack to pre-load existing policy) -->
+    
 
         <div class="policy-cols">
 
-            <div class="policy-col">
-                <h5>Allowed Datasets (Excel Sources)</h5>
-                <div class="checkbox-scroll-box">
-                    <asp:CheckBoxList ID="cblDatasets" runat="server"
-                        RepeatDirection="Vertical"
-                        RepeatLayout="Table"
-                        CssClass="cbl-policy" />
-                </div>
+            <!-- LEFT: Dataset access -->
+            
                 <p class="upload-hint" style="margin-top:6px;">
                     Ticked datasets will appear in this user's search results.
                 </p>
             </div>
 
+            <!-- RIGHT: Metadata column visibility -->
             <div class="policy-col">
                 <h5>Visible Metadata Columns</h5>
                 <div class="checkbox-scroll-box">
@@ -376,7 +418,7 @@
                 </p>
             </div>
 
-        </div>
+        </div><!-- /policy-cols -->
 
         <div class="section-divider"></div>
 
@@ -391,6 +433,32 @@
             CssClass="feedback-label" />
     </div>
 
-</div>
+    <!-- ══════════════════════════════════════════
+         SECTION 3 – DOCUMENT INGESTION
+    ══════════════════════════════════════════ -->
+    <div class="admin-card">
+        <h4>Document Ingestion (Excel Upload)</h4>
+
+        <div class="form-row" style="align-items:center;">
+            <asp:FileUpload ID="filePayload" runat="server"
+                AllowMultiple="true"
+                style="flex:1;" />
+            <asp:Button ID="btnIngestData" runat="server"
+                Text="Upload &amp; Ingest"
+                CssClass="btn-ongc"
+                OnClick="btnIngestData_Click" />
+        </div>
+
+        <p class="upload-hint">
+            Accepted: .xlsx files. First row = headers. Required columns:
+            <code>file_name</code>, <code>file_path</code>.
+            All other columns become searchable metadata.
+        </p>
+
+        <asp:Label ID="lblStatusFeedback" runat="server"
+            CssClass="feedback-label" />
+    </div>
+
+</div><!-- /admin-page -->
 
 </asp:Content>

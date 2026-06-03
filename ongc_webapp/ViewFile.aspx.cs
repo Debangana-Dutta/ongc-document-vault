@@ -18,7 +18,23 @@ namespace ongc_webapp
             EventArgs e)
         {
             string id =
-                Request.QueryString["id"];
+            Server.UrlDecode(
+            Request.QueryString["id"]);
+
+            Guid documentId;
+            if (Session["UserID"] == null)
+            {
+                Response.Redirect("Login.aspx");
+                return;
+            }
+
+            if (!Guid.TryParse(id, out documentId))
+            {
+                litViewer.Text =
+                    "<h2>Invalid File ID</h2>";
+
+                return;
+            }
 
             if (
                 string.IsNullOrWhiteSpace(id)
@@ -51,7 +67,7 @@ namespace ongc_webapp
                 {
                     cmd.Parameters.AddWithValue(
                         "@id",
-                        Guid.Parse(id));
+                        documentId);
 
                     object result =
                         cmd.ExecuteScalar();
