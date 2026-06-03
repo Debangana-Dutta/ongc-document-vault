@@ -1,18 +1,34 @@
 <%@ Master Language="C#" AutoEventWireup="true" %>
 <script runat="server">
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        // Show Admin Panel link only for admin role.
+        // BasePage enforces the real server-side security —
+        // this is purely a UI affordance.
+        string role = Session["UserRole"] != null
+            ? Session["UserRole"].ToString()
+            : string.Empty;
+
+        phAdminLink.Visible = role.Equals("admin",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     protected void lnkLogOut_Click(object sender, EventArgs e)
     {
         Session.Abandon();
         Session.Clear();
-        
+
         if (Request.Cookies["ASP.NET_SessionId"] != null)
         {
             Response.Cookies["ASP.NET_SessionId"].Value = string.Empty;
-            Response.Cookies["ASP.NET_SessionId"].Expires = DateTime.Now.AddMonths(-20);
+            Response.Cookies["ASP.NET_SessionId"].Expires =
+                DateTime.Now.AddMonths(-20);
         }
-        
+
         Response.Redirect("Login.aspx", true);
     }
+
 </script>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,11 +69,22 @@
                         <li class="foundation-nav-item"><a href="Dashboard.aspx">Home</a></li>
                         <li class="foundation-nav-item"><a href="About.aspx">About Us</a></li>
                         <li class="foundation-nav-item"><a href="Indexing.aspx">Document Search</a></li>
-                        <%-- Updated Link below --%>
-                        <li class="foundation-nav-item"><a href="AdminPanel.aspx">Admin Panel</a></li>
+
+                        <%-- Admin Panel link: visible only when Session["UserRole"] == "admin" --%>
+                        <asp:PlaceHolder ID="phAdminLink" runat="server">
+                            <li class="foundation-nav-item">
+                                <a href="AdminPanel.aspx">Admin Panel</a>
+                            </li>
+                        </asp:PlaceHolder>
+
                         <li class="foundation-nav-item"><a href="About.aspx">Contact Us</a></li>
                         <li class="foundation-nav-item">
-                            <asp:LinkButton ID="lnkLogOut" runat="server" OnClick="lnkLogOut_Click" CssClass="logout-btn-link" style="font-weight: 700; color: #b00c24;">Log Out</asp:LinkButton>
+                            <asp:LinkButton ID="lnkLogOut" runat="server"
+                                OnClick="lnkLogOut_Click"
+                                CssClass="logout-btn-link"
+                                style="font-weight: 700; color: #b00c24;">
+                                Log Out
+                            </asp:LinkButton>
                         </li>
                     </ul>
 
