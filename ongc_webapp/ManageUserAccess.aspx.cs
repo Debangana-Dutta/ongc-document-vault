@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Web.UI.WebControls;
 using Npgsql;
+using System.Linq;
+
 
 namespace ongc_webapp
 {
@@ -20,6 +22,234 @@ namespace ongc_webapp
                 return Convert.ToInt32(
                     Request.QueryString["userid"]);
             }
+        }
+
+        private void LoadPresets()
+        {
+            string adminUsername =
+                Session["Username"]?.ToString();
+
+            using (NpgsqlConnection conn =
+                new NpgsqlConnection(connString))
+            {
+                conn.Open();
+
+                string query =
+                    @"SELECT id, preset_name
+              FROM access_presets
+              WHERE admin_username=@admin
+              ORDER BY preset_name";
+
+                using (NpgsqlCommand cmd =
+                    new NpgsqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@admin",
+                        adminUsername);
+
+                    ddlPresets.DataSource =
+                        cmd.ExecuteReader();
+
+                    ddlPresets.DataTextField =
+                        "preset_name";
+
+                    ddlPresets.DataValueField =
+                        "id";
+
+                    ddlPresets.DataBind();
+                }
+            }
+        }
+
+        protected void btnSavePreset_Click(
+        object sender,
+        EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtPresetName.Text))
+            {
+                lblStatus.Text =
+                    "Please enter a preset name.";
+
+                return;
+            }
+            string adminUsername =
+                Session["Username"]?.ToString();
+
+            List<string> datasets =
+                cblDatasets.Items.Cast<ListItem>()
+                .Where(i => i.Selected)
+                .Select(i => i.Value)
+                .ToList();
+
+            if (datasets.Count == 0)
+            {
+                lblStatus.Text =
+                    "Select at least one dataset before saving a preset.";
+
+                return;
+            }
+
+
+            List<string> metadata =
+                cblMetadata.Items.Cast<ListItem>()
+                .Where(i => i.Selected)
+                .Select(i => i.Value)
+                .ToList();
+
+            string datasetString =
+                string.Join(",", datasets);
+
+            string metadataString =
+                string.Join(",", metadata);
+
+            using (NpgsqlConnection conn = new NpgsqlConnection(connString))
+            {
+                conn.Open();
+
+                string checkQuery =
+                @"SELECT COUNT(*)
+                  FROM access_presets
+                  WHERE admin_username=@admin
+                  AND preset_name=@name";
+
+                using (NpgsqlCommand checkCmd =
+                    new NpgsqlCommand(checkQuery, conn))
+                {
+                    checkCmd.Parameters.AddWithValue(
+                        "@admin",
+                        adminUsername);
+
+                    checkCmd.Parameters.AddWithValue(
+                        "@name",
+                        txtPresetName.Text.Trim());
+
+                    long exists =
+                        Convert.ToInt64(
+                            checkCmd.ExecuteScalar());
+
+                    if (exists > 0)
+                    {
+                        lblStatus.Text =
+                            "A preset with that name already exists.";
+
+                        return;
+                    }
+                }
+
+                string query =
+                    @"INSERT INTO access_presets
+            (
+                admin_username,
+                preset_name,
+                datasets,
+                metadata_columns
+            )
+            VALUES
+            (
+                @admin,
+                @name,
+                @datasets,
+                @metadata
+            )";
+
+                using (NpgsqlCommand cmd =
+                    new NpgsqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@admin",
+                        adminUsername);
+
+                    cmd.Parameters.AddWithValue(
+                        "@name",
+                        txtPresetName.Text.Trim());
+
+                    cmd.Parameters.AddWithValue(
+                        "@datasets",
+                        datasetString);
+
+                    cmd.Parameters.AddWithValue(
+                        "@metadata",
+                        metadataString);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            LoadPresets();
+
+            lblStatus.Text =
+                "Preset saved successfully.";
+        }
+
+        protected void btnLoadPreset_Click(
+        object sender,
+        EventArgs e)
+        {
+
+            if (string.IsNullOrWhiteSpace(ddlPresets.SelectedValue))
+            {
+                lblStatus.Text =
+                    "Please select a preset.";
+
+                return;
+            }
+            using (NpgsqlConnection conn =
+                new NpgsqlConnection(connString))
+            {
+                conn.Open();
+
+                string query =
+                    @"SELECT
+                datasets,
+                metadata_columns
+              FROM access_presets
+              WHERE id=@id";
+
+                using (NpgsqlCommand cmd =
+                    new NpgsqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@id",
+                        Convert.ToInt32(
+                            ddlPresets.SelectedValue));
+
+                    using (NpgsqlDataReader dr =
+                        cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            string[] datasets =
+                                dr["datasets"]
+                                .ToString()
+                                .Split(',');
+
+                            string[] metadata =
+                                dr["metadata_columns"]
+                                .ToString()
+                                .Split(',');
+
+                            foreach (ListItem item
+                                in cblDatasets.Items)
+                            {
+                                item.Selected =
+                                    datasets.Contains(
+                                        item.Value);
+                            }
+
+                            foreach (ListItem item
+                                in cblMetadata.Items)
+                            {
+                                item.Selected =
+                                    metadata.Contains(
+                                        item.Value);
+                            }
+                        }
+                    }
+                }
+            }
+
+            lblStatus.Text =
+                "Preset loaded successfully.";
         }
 
         protected void Page_Load(
@@ -41,6 +271,8 @@ namespace ongc_webapp
 
             if (!IsPostBack)
             {
+                LoadPresets();
+
                 LoadUserInfo();
                 LoadDatasets();
                 LoadUserDatasets();

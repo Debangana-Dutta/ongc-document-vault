@@ -14,6 +14,8 @@ namespace ongc_webapp
     public partial class ManageUserAccess
     {
 
+        
+
         /// <summary>
         /// form1 control.
         /// </summary>
@@ -31,6 +33,42 @@ namespace ongc_webapp
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblUserInfo;
+
+        /// <summary>
+        /// ddlPresets control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlPresets;
+
+        /// <summary>
+        /// btnLoadPreset control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnLoadPreset;
+
+        /// <summary>
+        /// txtPresetName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtPresetName;
+
+        /// <summary>
+        /// btnSavePreset control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSavePreset;
 
         /// <summary>
         /// chkSelectAllDatasets control.

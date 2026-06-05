@@ -124,6 +124,35 @@
 
                 <h3>Step 1 — Dataset Access</h3>
 
+                <div style="margin-bottom:15px;">
+
+                    <asp:DropDownList
+                        ID="ddlPresets"
+                        runat="server"
+                        Width="300px">
+                    </asp:DropDownList>
+
+                    <asp:Button
+                        ID="btnLoadPreset"
+                        runat="server"
+                        Text="Load Preset"
+                        CssClass="btn btn-primary"
+                        OnClick="btnLoadPreset_Click" />
+
+                </div>
+
+                <asp:TextBox
+                    ID="txtPresetName"
+                    runat="server"
+                    CssClass="form-control"
+                    placeholder="Preset name" />
+
+                <asp:Button
+                    ID="btnSavePreset"
+                    runat="server"
+                    Text="Save As Preset"
+                    OnClick="btnSavePreset_Click" />
+
                 <p class="section-title">
                     Select the datasets this user is allowed to search.
                 </p>

@@ -284,9 +284,11 @@ namespace ongc_webapp
                                     Session["UserID"] =
                                         reader["username"].ToString();
 
+                                    Session["Username"] =
+                                        reader["username"].ToString();
+
                                     Session["Role"] =
                                         reader["role"].ToString();
-
 
                                     Session["LoginTime"] =
                                         DateTime.Now.ToString();
