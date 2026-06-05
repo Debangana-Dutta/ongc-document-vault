@@ -470,12 +470,40 @@
             background: #1558b0;
         }
 
+        /* Pager styling */
+
         .grid-table tr.gridview-pager td,
         .grid-table tr[align="center"] td {
-            background-color: #f8f9fa !important;
-            text-align: center;
-            border: none;
+            background: #ffffff !important;
+            text-align: center !important;
+            border-top: 2px solid #e0e0e0 !important;
+            padding: 14px !important;
         }
+
+        .grid-table tr.gridview-pager a,
+        .grid-table tr.gridview-pager span,
+        .grid-table tr[align="center"] a,
+        .grid-table tr[align="center"] span {
+            display: inline-block;
+            padding: 6px 12px;
+            margin: 0 3px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .grid-table tr.gridview-pager span,
+        .grid-table tr[align="center"] span {
+            background: #7a0616;
+            color: white;
+        }
+
+        .grid-table tr.gridview-pager a,
+        .grid-table tr[align="center"] a {
+            color: #7a0616;
+            border: 1px solid #dadce0;
+        }
+        
 
     </style>
 
@@ -745,6 +773,21 @@ window.onload = function () {
                 <asp:PlaceHolder ID="phDynamicFilters" runat="server" />
             </div>
 
+            <hr style="margin:12px 0;" />
+
+            <h5>Dataset Filter</h5>
+
+            <div class="metadata-scroll-area">
+
+                <asp:CheckBoxList
+                    ID="cblDatasets"
+                    runat="server"
+                    RepeatDirection="Vertical"
+                    RepeatLayout="Table">
+                </asp:CheckBoxList>
+
+            </div>
+
             <div class="metadata-filter-footer">
                 <asp:Button ID="btnApplyFilters"
                     runat="server"
@@ -779,19 +822,40 @@ window.onload = function () {
                         GridLines="Both"
                         BorderStyle="None"
                         BorderWidth="0"
-                        EnableViewState="false"
-                        AllowPaging="true"
-                        PageSize="100"
-                        OnPageIndexChanging="gvDocuments_PageIndexChanging">
+                        EnableViewState="false">
                     </asp:GridView>
 
                 </div>
-
                 <!-- BOTTOM sync scrollbar -->
                 <div class="scroll-track scroll-track-bottom" id="bottomScroll">
                     <div id="bottomScrollContent"></div>
                 </div>
 
+                <div class="custom-pager">
+
+                    <asp:Button
+                        ID="btnPrevPage"
+                        runat="server"
+                        Text="Previous"
+                        CssClass="btn-page"
+                        OnClick="btnPrevPage_Click" />
+
+                    <asp:Label
+                        ID="lblPageInfo"
+                        runat="server"
+                        Text="Page 1 of 1"
+                        CssClass="page-info" />
+
+                    <asp:Button
+                        ID="btnNextPage"
+                        runat="server"
+                        Text="Next"
+                        CssClass="btn-page"
+                        OnClick="btnNextPage_Click" />
+
+                </div>
+
+               
             </div>
         </div><!-- /main-results -->
 

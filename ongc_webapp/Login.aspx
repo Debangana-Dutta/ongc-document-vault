@@ -466,12 +466,13 @@
             <div class="form-footer" id="emp-footer-login">
                 <div class="footer-row">
                     <button type="button" class="link-btn" onclick="switchEmployeeView('RECOVERY')">Forgot Password?</button>
-                    <span>New here?
-                    <a href="Register.aspx"
-                       class="link-btn">
-                       Register
-                    </a>
-                </span>
+                    <span>
+                        New here?
+                        <a href="Register.aspx"
+                           class="link-btn">
+                           Register
+                        </a>
+                    </span>
                 </div>
             </div>
             <div class="form-footer" id="emp-footer-register" style="display:none;">

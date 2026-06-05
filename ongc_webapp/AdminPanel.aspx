@@ -260,33 +260,41 @@
     <!-- ══════════════════════════════════════════
      ACCOUNT APPROVALS
 ══════════════════════════════════════════ -->
+
+<!-- ACCOUNT APPROVALS -->
+
 <div class="admin-card">
-    <h4>Pending Account Approvals</h4>
+
+    <h4>Account Approvals</h4>
 
     <div style="margin-bottom:15px;">
-        <asp:Button ID="btnShowPending"
-            runat="server"
-            Text="Show Pending"
-            CssClass="btn-ongc"
-            OnClick="btnShowPending_Click" />
 
-        <asp:Button ID="btnShowAllUsers"
-            runat="server"
-            Text="Show All Users"
-            CssClass="btn-ongc-outline"
-            OnClick="btnShowAllUsers_Click"
-            Style="margin-left:10px;" />
-    </div>
+    <asp:Button
+        ID="btnShowPending"
+        runat="server"
+        Text="Pending Only"
+        CssClass="btn-ongc-outline"
+        OnClick="btnShowPending_Click" />
 
-<asp:GridView ID="gvPendingUsers"
-    runat="server"
-    CssClass="admin-grid"
-    AutoGenerateColumns="False"
-    GridLines="None"
-    BorderStyle="None"
-    OnRowCommand="gvPendingUsers_RowCommand">
+    <asp:Button
+        ID="btnShowAllUsers"
+        runat="server"
+        Text="All Users"
+        CssClass="btn-ongc"
+        Style="margin-left:8px;"
+        OnClick="btnShowAllUsers_Click" />
 
-    <Columns>
+     </div>
+
+    <asp:GridView ID="gvPendingUsers"
+        runat="server"
+        CssClass="admin-grid"
+        AutoGenerateColumns="False"
+        GridLines="None"
+        BorderStyle="None"
+        OnRowCommand="gvPendingUsers_RowCommand">
+
+        <Columns>
 
             <asp:BoundField
                 DataField="username"
@@ -305,24 +313,21 @@
                 HeaderText="Status" />
 
             <asp:TemplateField HeaderText="Action">
+
                 <ItemTemplate>
 
-                    <asp:Button ID="btnApprove"
+                    <asp:Button
+                        ID="btnToggleStatus"
                         runat="server"
-                        Text="Approve"
-                        CommandName="Approve"
+                        Text='<%# Eval("account_status").ToString() == "APPROVED"
+                                    ? "Reject"
+                                    : "Approve" %>'
+                        CommandName="ToggleStatus"
                         CommandArgument='<%# Eval("username") %>'
                         CssClass="btn-ongc" />
 
-                    <asp:Button ID="btnReject"
-                        runat="server"
-                        Text="Reject"
-                        CommandName="Reject"
-                        CommandArgument='<%# Eval("username") %>'
-                        CssClass="btn-ongc-outline"
-                        Style="margin-left:6px;" />
-
-                    <asp:Button ID="btnResetPassword"
+                    <asp:Button
+                        ID="btnResetPassword"
                         runat="server"
                         Text="Reset Password"
                         CommandName="ResetPassword"
@@ -331,107 +336,85 @@
                         Style="margin-left:6px;" />
 
                 </ItemTemplate>
+
             </asp:TemplateField>
 
         </Columns>
 
     </asp:GridView>
 
-    <asp:Label ID="lblApprovalFeedback"
+    <asp:Label
+        ID="lblApprovalFeedback"
         runat="server"
         CssClass="feedback-label" />
+
 </div>
 
-    <!-- ══════════════════════════════════════════
-         SECTION 1 – USER MANAGEMENT
-    ══════════════════════════════════════════ -->
-    <div class="admin-card">
-        <h4>User Management</h4>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label>Full Name</label>
-                <asp:TextBox ID="txtUserName" runat="server"
-                    placeholder="e.g. Rajesh Kumar" />
-            </div>
-            <div class="form-group">
-                <label>CPF / Employee ID</label>
-                <asp:TextBox ID="txtCPF" runat="server"
-                    placeholder="e.g. EMP-001" />
-            </div>
-            <div class="form-group">
-                <label>Department</label>
-                <asp:TextBox ID="txtDept" runat="server"
-                    placeholder="e.g. Drilling" />
-            </div>
-            <asp:Button ID="btnAddUser" runat="server"
-                Text="Add User"
-                CssClass="btn-ongc"
-                OnClick="btnAddUser_Click" />
-        </div>
-
-        <asp:Label ID="lblAdminFeedback" runat="server"
-            CssClass="feedback-label" />
-
-        <asp:GridView ID="gvUsers" runat="server"
-            CssClass="admin-grid"
-            AutoGenerateColumns="True"
-            GridLines="None"
-            BorderStyle="None" />
-    </div>
 
     <!-- ══════════════════════════════════════════
          SECTION 2 – ACCESS POLICY
     ══════════════════════════════════════════ -->
-    <div class="admin-card">
-        <h4>Dataset &amp; Metadata Access Policy</h4>
 
-        <p style="font-size:0.875rem;color:#5f6368;margin-bottom:16px;">
-            Select a user, then choose which <strong>Datasets</strong> they can search
-            and which <strong>Metadata columns</strong> appear in their sidebar.
-        </p>
-
-        <!-- User selector (AutoPostBack to pre-load existing policy) -->
     
 
-        <div class="policy-cols">
+    <div class="admin-card">
 
-            <!-- LEFT: Dataset access -->
-            
-                <p class="upload-hint" style="margin-top:6px;">
-                    Ticked datasets will appear in this user's search results.
-                </p>
-            </div>
+    <h4>User Access Management</h4>
 
-            <!-- RIGHT: Metadata column visibility -->
-            <div class="policy-col">
-                <h5>Visible Metadata Columns</h5>
-                <div class="checkbox-scroll-box">
-                    <asp:CheckBoxList ID="cblMetadataColumns" runat="server"
-                        RepeatDirection="Vertical"
-                        RepeatLayout="Table"
-                        CssClass="cbl-policy" />
-                </div>
-                <p class="upload-hint" style="margin-top:6px;">
-                    Only ticked columns will show in this user's sidebar filters.
-                    Select all = unrestricted.
-                </p>
-            </div>
+    <p class="upload-hint">
+        Manage dataset and metadata visibility for each user.
+    </p>
 
-        </div><!-- /policy-cols -->
+    <asp:GridView
+        ID="gvUserAccess"
+        runat="server"
+        CssClass="admin-grid"
+        AutoGenerateColumns="False"
+        GridLines="None"
+        BorderStyle="None"
+        OnRowCommand="gvUserAccess_RowCommand">
 
-        <div class="section-divider"></div>
+        <Columns>
 
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-            <asp:Button ID="btnSaveAccessPolicy" runat="server"
-                Text="Save Access Policy"
-                CssClass="btn-ongc"
-                OnClick="btnSaveAccessPolicy_Click" />
-        </div>
+            <asp:BoundField
+                DataField="username"
+                HeaderText="User" />
 
-        <asp:Label ID="lblPolicyFeedback" runat="server"
-            CssClass="feedback-label" />
-    </div>
+            <asp:BoundField
+                DataField="role"
+                HeaderText="Role" />
+
+            <asp:BoundField
+                DataField="account_status"
+                HeaderText="Status" />
+
+            <asp:BoundField
+                DataField="dataset_count"
+                HeaderText="Datasets Assigned" />
+
+            <asp:TemplateField HeaderText="Manage">
+
+                <ItemTemplate>
+
+                    <asp:Button
+                        ID="btnManage"
+                        runat="server"
+                        Text="Manage"
+                        CommandName="ManageAccess"
+                        CommandArgument='<%# Eval("id") %>'
+                        CssClass="btn-ongc" />
+
+                </ItemTemplate>
+
+            </asp:TemplateField>
+
+        </Columns>
+
+    </asp:GridView>
+
+</div>
+
 
     <!-- ══════════════════════════════════════════
          SECTION 3 – DOCUMENT INGESTION
@@ -440,6 +423,20 @@
         <h4>Document Ingestion (Excel Upload)</h4>
 
         <div class="form-row" style="align-items:center;">
+
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label>Dataset Name</label>
+
+                    <asp:TextBox
+                        ID="txtDatasetName"
+                        runat="server"
+                        placeholder="e.g. Finance, HR, Geology" />
+                </div>
+
+            </div>
+
             <asp:FileUpload ID="filePayload" runat="server"
                 AllowMultiple="true"
                 style="flex:1;" />
@@ -459,6 +456,55 @@
             CssClass="feedback-label" />
     </div>
 
-</div><!-- /admin-page -->
+    <asp:Panel
+    ID="pnlPasswordReset"
+    runat="server"
+    Visible="false"
+    CssClass="admin-card"
+    Style="position:fixed;
+           top:50%;
+           left:50%;
+           transform:translate(-50%,-50%);
+           z-index:9999;
+           width:400px;
+           background:white;
+           border:1px solid #ddd;
+           box-shadow:0 4px 20px rgba(0,0,0,0.25);">
+
+    <h4>Reset Password</h4>
+
+    <asp:HiddenField
+        ID="hfResetUsername"
+        runat="server" />
+
+    <div class="form-group">
+
+        <label>New Password</label>
+
+        <asp:TextBox
+            ID="txtNewPassword"
+            runat="server"
+            TextMode="Password" />
+
+    </div>
+
+    <br />
+
+    <asp:Button
+        ID="btnSavePassword"
+        runat="server"
+        Text="Save Password"
+        CssClass="btn-ongc"
+        OnClick="btnSavePassword_Click" />
+
+    <asp:Button
+        ID="btnCancelPassword"
+        runat="server"
+        Text="Cancel"
+        CssClass="btn-ongc-outline"
+        Style="margin-left:8px;"
+        OnClick="btnCancelPassword_Click" />
+
+</asp:Panel>
 
 </asp:Content>
