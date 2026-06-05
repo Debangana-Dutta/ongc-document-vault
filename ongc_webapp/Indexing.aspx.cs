@@ -512,13 +512,20 @@ namespace ongc_webapp
 
             if (whereConditions.Count > 0)
                 query += " AND " + string.Join(" AND ", whereConditions);
-                
+
                 string countQuery =
                 @"SELECT COUNT(*)
                   FROM indexed_documents
                   WHERE 1=1";
 
-                query += " ORDER BY uploaded_at DESC LIMIT 500";
+                    if (whereConditions.Count > 0)
+                    {
+                        countQuery +=
+                            " AND " +
+                            string.Join(" AND ", whereConditions);
+                    }
+
+            query += " ORDER BY uploaded_at DESC LIMIT 500";
 
             // ── Execute query ──────────────────────────────────
             List<Dictionary<string, string>> allRows =
@@ -532,41 +539,6 @@ namespace ongc_webapp
                     new NpgsqlConnection(connString))
                 {
                     conn.Open();
-
-                    totalResults = 0;
-
-                    if (whereConditions.Count > 0)
-                    {
-                        countQuery +=
-                            " AND " +
-                            string.Join(" AND ", whereConditions);
-                    }
-
-                    using (NpgsqlCommand countCmd =
-                        new NpgsqlCommand(countQuery, conn))
-                    {
-                        for (int i = 0;
-                             i < allowedDatasets.Count;
-                             i++)
-                        {
-                            countCmd.Parameters.AddWithValue(
-                                "dataset" + i,
-                                allowedDatasets[i]);
-                        }
-
-                        for (int i = 0;
-                             i < keywords.Count;
-                             i++)
-                        {
-                            countCmd.Parameters.AddWithValue(
-                                "kw" + i,
-                                "%" + keywords[i] + "%");
-                        }
-
-                        totalResults =
-                            Convert.ToInt32(
-                                countCmd.ExecuteScalar());
-                    }
 
                     using (NpgsqlCommand cmd =
                         new NpgsqlCommand(query, conn))
@@ -713,7 +685,11 @@ namespace ongc_webapp
                         }
                     }
 
-                    if (cb == null || !cb.Checked || txt == null) continue;
+                    if (cb == null || txt == null)
+                        continue;
+
+                    if (string.IsNullOrWhiteSpace(txt.Text))
+                        continue;
 
                     string colName = cb.ID.Replace("cb_", "");
                     string actualValue = rowMap.ContainsKey(colName)
@@ -746,6 +722,8 @@ namespace ongc_webapp
             }
 
             allRows = filteredRows;
+
+            totalResults = filteredRows.Count;
 
             // ── Build DataTable for GridView ───────────────────
             DataTable finalTable = new DataTable();
@@ -849,7 +827,11 @@ namespace ongc_webapp
             gvDocuments.DataBind();
 
             lblStatus.Text =
-                totalResults + " result(s) found.";
+                "Filtered rows = " +
+                filteredRows.Count;
+
+            lblStatus.Text =
+                " ";
 
             lblStatus.ForeColor =
                 System.Drawing.Color.FromArgb(0x18, 0x80, 0x38);

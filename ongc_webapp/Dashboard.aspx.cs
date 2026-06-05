@@ -38,22 +38,37 @@ namespace ongc_webapp
                     lblTotalFiles.Text = string.Format("{0:N0}", totalFiles);
                     lblIndexedSuccess.Text = string.Format("{0:N0}", totalFiles);
                     lblPendingIndexing.Text = "0";
-                }
 
-                string logQuery = @"SELECT id, file_name, file_path, dynamic_metadata 
-                                    FROM indexed_documents 
-                                    ORDER BY id DESC LIMIT 5";
+                    string userStatsQuery =
+                    @"
+                    SELECT
+                        SUM(CASE WHEN account_status='APPROVED' THEN 1 ELSE 0 END) AS approved,
+                        SUM(CASE WHEN account_status='PENDING' THEN 1 ELSE 0 END) AS pending,
+                        SUM(CASE WHEN account_status='REJECTED' THEN 1 ELSE 0 END) AS rejected
+                    FROM users";
 
-                using (NpgsqlCommand cmd2 = new NpgsqlCommand(logQuery, conn))
-                {
-                    using (NpgsqlDataAdapter da = new NpgsqlDataAdapter(cmd2))
+                    using (NpgsqlCommand cmdUsers =
+                    new NpgsqlCommand(userStatsQuery, conn))
                     {
-                        DataTable dt = new DataTable();
-                        da.Fill(dt);
-                        rptRecentLogs.DataSource = dt;
-                        rptRecentLogs.DataBind();
+                        using (NpgsqlDataReader dr =
+                            cmdUsers.ExecuteReader())
+                        {
+                            if (dr.Read())
+                            {
+                                lblApprovedUsers.Text =
+                                    Convert.ToString(dr["approved"]);
+
+                                lblPendingUsers.Text =
+                                    Convert.ToString(dr["pending"]);
+
+                                lblRejectedUsers.Text =
+                                    Convert.ToString(dr["rejected"]);
+                            }
+                        }
                     }
                 }
+
+                
             }
         }
 

@@ -14,6 +14,8 @@ namespace ongc_webapp
     public partial class Dashboard
     {
 
+        
+
         /// <summary>
         /// lblTotalFiles control.
         /// </summary>
@@ -42,12 +44,30 @@ namespace ongc_webapp
         protected global::System.Web.UI.WebControls.Label lblPendingIndexing;
 
         /// <summary>
-        /// rptRecentLogs control.
+        /// lblApprovedUsers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptRecentLogs;
+        protected global::System.Web.UI.WebControls.Label lblApprovedUsers;
+
+        /// <summary>
+        /// lblPendingUsers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPendingUsers;
+
+        /// <summary>
+        /// lblRejectedUsers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRejectedUsers;
     }
 }

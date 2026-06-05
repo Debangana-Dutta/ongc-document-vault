@@ -73,27 +73,58 @@
 
         <div class="row g-4 mb-5">
             <div class="col-lg-8">
-                <div class="card p-4 border-0 shadow-sm" style="border-radius: 14px;">
-                    <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-database me-2 text-primary"></i> Recent Indexed Files</h5>
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead><tr><th>ID</th><th>File Name</th><th>Path</th><th>Metadata</th></tr></thead>
-                            <tbody>
-                                <asp:Repeater ID="rptRecentLogs" runat="server">
-                                    <ItemTemplate>
-                                        <tr>
-                                            <td class="text-secondary fw-bold font-monospace"><%# Eval("id") %></td>
-                                            <td class="fw-bold text-dark"><%# Eval("file_name") %></td>
-                                            <td class="text-muted small"><%# Eval("file_path") %></td>
-                                            <td><span class="badge bg-light text-dark border"><%# Eval("dynamic_metadata") %></span></td>
-                                        </tr>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </tbody>
-                        </table>
+    <div class="card p-4 border-0 shadow-sm" style="border-radius: 14px;">
+
+        <h5 class="fw-bold mb-4 text-dark">
+            <i class="fas fa-users me-2 text-primary"></i>
+            User Management Summary
+        </h5>
+
+        <div class="row g-3">
+
+            <div class="col-md-4">
+                <div class="stat-card" style="border-top-color:#10b981;">
+                    <div class="text-success small fw-bold text-uppercase">
+                        Approved Users
+                    </div>
+                    <div class="stat-value text-success">
+                        <asp:Label ID="lblApprovedUsers"
+                                   runat="server"
+                                   Text="0" />
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-4">
+                <div class="stat-card" style="border-top-color:#f59e0b;">
+                    <div class="text-warning small fw-bold text-uppercase">
+                        Pending Users
+                    </div>
+                    <div class="stat-value text-warning">
+                        <asp:Label ID="lblPendingUsers"
+                                   runat="server"
+                                   Text="0" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-card" style="border-top-color:#ef4444;">
+                    <div class="text-danger small fw-bold text-uppercase">
+                        Rejected Users
+                    </div>
+                    <div class="stat-value text-danger">
+                        <asp:Label ID="lblRejectedUsers"
+                                   runat="server"
+                                   Text="0" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
 
             <div class="col-lg-4">
                 <div class="action-card d-flex flex-column justify-content-between shadow-lg">
