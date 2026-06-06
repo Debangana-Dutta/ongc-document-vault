@@ -263,92 +263,7 @@
 
 <!-- ACCOUNT APPROVALS -->
 
-<div class="admin-card">
 
-    <h4>Account Approvals</h4>
-
-    <div style="margin-bottom:15px;">
-
-    <asp:Button
-        ID="btnShowPending"
-        runat="server"
-        Text="Pending Only"
-        CssClass="btn-ongc-outline"
-        OnClick="btnShowPending_Click" />
-
-    <asp:Button
-        ID="btnShowAllUsers"
-        runat="server"
-        Text="All Users"
-        CssClass="btn-ongc"
-        Style="margin-left:8px;"
-        OnClick="btnShowAllUsers_Click" />
-
-     </div>
-
-    <asp:GridView ID="gvPendingUsers"
-        runat="server"
-        CssClass="admin-grid"
-        AutoGenerateColumns="False"
-        GridLines="None"
-        BorderStyle="None"
-        OnRowCommand="gvPendingUsers_RowCommand">
-
-        <Columns>
-
-            <asp:BoundField
-                DataField="username"
-                HeaderText="Username" />
-
-            <asp:BoundField
-                DataField="role"
-                HeaderText="Role" />
-
-            <asp:BoundField
-                DataField="department"
-                HeaderText="Department" />
-
-            <asp:BoundField
-                DataField="account_status"
-                HeaderText="Status" />
-
-            <asp:TemplateField HeaderText="Action">
-
-                <ItemTemplate>
-
-                    <asp:Button
-                        ID="btnToggleStatus"
-                        runat="server"
-                        Text='<%# Eval("account_status").ToString() == "APPROVED"
-                                    ? "Reject"
-                                    : "Approve" %>'
-                        CommandName="ToggleStatus"
-                        CommandArgument='<%# Eval("username") %>'
-                        CssClass="btn-ongc" />
-
-                    <asp:Button
-                        ID="btnResetPassword"
-                        runat="server"
-                        Text="Reset Password"
-                        CommandName="ResetPassword"
-                        CommandArgument='<%# Eval("username") %>'
-                        CssClass="btn-ongc-outline"
-                        Style="margin-left:6px;" />
-
-                </ItemTemplate>
-
-            </asp:TemplateField>
-
-        </Columns>
-
-    </asp:GridView>
-
-    <asp:Label
-        ID="lblApprovalFeedback"
-        runat="server"
-        CssClass="feedback-label" />
-
-</div>
 
 
 
@@ -359,6 +274,24 @@
     
 
     <div class="admin-card">
+
+    <div style="margin-bottom:15px;">
+
+    <asp:Button
+        ID="btnShowAllUsers"
+        runat="server"
+        Text="All Users"
+        CssClass="btn-ongc"
+        OnClick="btnShowAllUsers_Click" />
+
+    <asp:Button
+        ID="btnShowPending"
+        runat="server"
+        Text="Pending Users"
+        CssClass="btn-ongc-outline"
+        OnClick="btnShowPending_Click" />
+
+</div>
 
     <h4>User Access Management</h4>
 
@@ -392,22 +325,56 @@
             <asp:BoundField
                 DataField="dataset_count"
                 HeaderText="Datasets Assigned" />
+            <asp:TemplateField HeaderText="Approval">
 
-            <asp:TemplateField HeaderText="Manage">
+                    <ItemTemplate>
 
-                <ItemTemplate>
+                        <asp:Button
+                            ID="btnToggleStatus"
+                            runat="server"
+                            Text='<%# Eval("account_status").ToString() == "APPROVED"
+                                        ? "Reject"
+                                        : "Approve" %>'
+                            CommandName="ToggleStatus"
+                            CommandArgument='<%# Eval("username") %>'
+                            CssClass="btn-ongc" />
 
-                    <asp:Button
-                        ID="btnManage"
-                        runat="server"
-                        Text="Manage"
-                        CommandName="ManageAccess"
-                        CommandArgument='<%# Eval("id") %>'
-                        CssClass="btn-ongc" />
+                    </ItemTemplate>
 
-                </ItemTemplate>
+                </asp:TemplateField>
 
-            </asp:TemplateField>
+                <asp:TemplateField HeaderText="Access">
+
+                    <ItemTemplate>
+
+                        <asp:Button
+                            ID="btnManage"
+                            runat="server"
+                            Text="Manage"
+                            CommandName="ManageAccess"
+                            CommandArgument='<%# Eval("id") %>'
+                            CssClass="btn-ongc"
+                            Visible='<%# Eval("account_status").ToString() == "APPROVED" %>' />
+
+                    </ItemTemplate>
+
+                </asp:TemplateField>
+
+                <asp:TemplateField HeaderText="Password">
+
+                    <ItemTemplate>
+
+                        <asp:Button
+                            ID="btnResetPassword"
+                            runat="server"
+                            Text="Reset Password"
+                            CommandName="ResetPassword"
+                            CommandArgument='<%# Eval("username") %>'
+                            CssClass="btn-ongc-outline" />
+
+                    </ItemTemplate>
+
+                </asp:TemplateField>
 
         </Columns>
 

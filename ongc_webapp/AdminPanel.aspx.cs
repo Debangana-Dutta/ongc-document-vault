@@ -28,120 +28,35 @@ namespace ongc_webapp
 {
     public partial class AdminPanel : System.Web.UI.Page
     {
-
-    protected void gvPendingUsers_RowCommand(
-        object sender,
-        GridViewCommandEventArgs e)
+        private bool ShowPendingOnly
         {
-            try
+            get
             {
-                string username = e.CommandArgument.ToString();
-
-                if(e.CommandName == "ResetPassword")
-{
-                    hfResetUsername.Value =
-                        username;
-
-                    txtNewPassword.Text = "";
-
-                    pnlPasswordReset.Visible =
-                        true;
-
-                    return;
-                }
-
-
-
-                if (e.CommandName == "ToggleStatus")
-                {
-                    string currentStatus = "";
-                    string newStatus = "";
-
-                    using (NpgsqlConnection conn =
-                        new NpgsqlConnection(connString))
-                    {
-                        conn.Open();
-
-                        using (NpgsqlCommand cmd =
-                            new NpgsqlCommand(
-                                @"SELECT account_status
-                  FROM users
-                  WHERE username=@username",
-                                conn))
-                        {
-                            cmd.Parameters.AddWithValue(
-                                "username",
-                                username);
-
-                            object result =
-                                cmd.ExecuteScalar();
-
-                            if (result != null)
-                                currentStatus =
-                                    result.ToString();
-                        }
-
-                        newStatus =
-                            currentStatus == "APPROVED"
-                                ? "REJECTED"
-                                : "APPROVED";
-
-                        using (NpgsqlCommand cmd =
-                            new NpgsqlCommand(
-                                @"UPDATE users
-                  SET account_status=@status
-                  WHERE username=@username",
-                                conn))
-                        {
-                            cmd.Parameters.AddWithValue(
-                                "status",
-                                newStatus);
-
-                            cmd.Parameters.AddWithValue(
-                                "username",
-                                username);
-
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-
-                    BindPendingUsersGrid(true);
-
-                    ShowFeedback(
-                        lblApprovalFeedback,
-                        "User '" + username +
-                        "' changed to " +
-                        newStatus,
-                        true);
-
-                    return;
-                }
+                return ViewState["ShowPendingOnly"] != null
+                    && (bool)ViewState["ShowPendingOnly"];
             }
-            catch (Exception ex)
+            set
             {
-                ShowFeedback(
-                    lblApprovalFeedback,
-                    "Error: " + ex.Message,
-                    false);
+                ViewState["ShowPendingOnly"] = value;
             }
         }
 
         protected void btnSavePassword_Click(
-    object sender,
-    EventArgs e)
-        {
-            try
-            {
-                string username =
+                    object sender,
+                    EventArgs e)
+                {
+                    try
+                    {
+                    string username =
                     hfResetUsername.Value;
 
-                string newPassword =
+                    string newPassword =
                     txtNewPassword.Text.Trim();
 
                 if (string.IsNullOrWhiteSpace(newPassword))
                 {
                     ShowFeedback(
-                        lblApprovalFeedback,
+                        lblStatusFeedback,
                         "Password cannot be empty.",
                         false);
 
@@ -154,9 +69,9 @@ namespace ongc_webapp
                     conn.Open();
 
                     string query =
-                    @"UPDATE users
-              SET password_hash=@pwd
-              WHERE username=@username";
+                       @"UPDATE users
+                      SET password_hash=@pwd
+                      WHERE username=@username";
 
                     using (NpgsqlCommand cmd =
                         new NpgsqlCommand(query, conn))
@@ -177,14 +92,14 @@ namespace ongc_webapp
                     false;
 
                 ShowFeedback(
-                    lblApprovalFeedback,
+                    lblStatusFeedback,
                     "Password updated successfully.",
                     true);
             }
             catch (Exception ex)
             {
                 ShowFeedback(
-                    lblApprovalFeedback,
+                    lblStatusFeedback,
                     ex.Message,
                     false);
             }
@@ -224,108 +139,79 @@ namespace ongc_webapp
 
             if(!IsPostBack)
             {
-
-                BindPendingUsersGrid(true);
                 BindUserAccessGrid();
 
             }
         }
 
-        protected void btnShowPending_Click(
-        object sender,
-        EventArgs e)
-        {
-            BindPendingUsersGrid(false);
-
-            btnShowPending.CssClass =
-                "btn-ongc";
-
-            btnShowAllUsers.CssClass =
-                "btn-ongc-outline";
-        }
-
-        protected void btnShowAllUsers_Click(
-            object sender,
-            EventArgs e)
-        {
-            BindPendingUsersGrid(true);
-
-            btnShowAllUsers.CssClass =
-                "btn-ongc";
-
-            btnShowPending.CssClass =
-                "btn-ongc-outline";
-        }
+            
 
 
         protected void gvUserAccess_RowCommand(
-        object sender,
-        GridViewCommandEventArgs e)
+                        object sender,
+                        GridViewCommandEventArgs e)
         {
+            string username =
+                e.CommandArgument.ToString();
+
             if (e.CommandName == "ManageAccess")
             {
                 Response.Redirect(
                     "ManageUserAccess.aspx?userid=" +
                     e.CommandArgument);
-            }
-        }
 
-        private void BindPendingUsersGrid(bool showAll)
-        {
-            try
+                return;
+            }
+
+            if (e.CommandName == "ResetPassword")
+            {
+                hfResetUsername.Value =
+                    username;
+
+                txtNewPassword.Text = "";
+
+                pnlPasswordReset.Visible =
+                    true;
+
+                return;
+            }
+
+            if (e.CommandName == "ToggleStatus")
             {
                 using (NpgsqlConnection conn =
                     new NpgsqlConnection(connString))
                 {
                     conn.Open();
 
-                    string query;
+                    string query =
+                    @"
+                    UPDATE users
+                    SET account_status =
+                        CASE
+                            WHEN account_status = 'APPROVED'
+                                THEN 'REJECTED'
+                            ELSE 'APPROVED'
+                        END
+                    WHERE username = @username";
 
-                    if (showAll)
+                    using (NpgsqlCommand cmd =
+                        new NpgsqlCommand(query, conn))
                     {
-                        query = @"
-                    SELECT
-                        username,
-                        role,
-                        department,
-                        account_status
-                    FROM users
-                    ORDER BY username";
+                        cmd.Parameters.AddWithValue(
+                            "username",
+                            username);
+
+                        cmd.ExecuteNonQuery();
                     }
-                    else
-                    {
-                        query = @"
-                    SELECT
-                        username,
-                        role,
-                        department,
-                        account_status
-                    FROM users
-                    WHERE account_status = 'PENDING'
-                    ORDER BY username";
-                    }
-
-                    NpgsqlDataAdapter da =
-                        new NpgsqlDataAdapter(query, conn);
-
-                    DataTable dt =
-                    new DataTable();
-
-                    da.Fill(dt);
-
-                    gvPendingUsers.DataSource = dt;
-                    gvPendingUsers.DataBind();
                 }
-            }
-            catch (Exception ex)
-            {
-                ShowFeedback(
-                    lblApprovalFeedback,
-                    "Error loading approvals: " + ex.Message,
-                    false
-                );
+
+                BindUserAccessGrid();
+
+                return;
             }
         }
+
+        
 
         // ════════════════════════════════════════════════════════
         //  1. USER MANAGEMENT
@@ -370,23 +256,32 @@ namespace ongc_webapp
             {
                 conn.Open();
 
+                string whereClause = "";
+
+                if (ShowPendingOnly)
+                {
+                    whereClause =
+                        "WHERE u.account_status = 'PENDING'";
+                }
+
                 string query =
-                @"
-                SELECT
-                    u.id,
-                    u.username,
-                    u.role,
-                    u.account_status,
-                    COUNT(uda.dataset_name) AS dataset_count
-                FROM users u
-                LEFT JOIN user_dataset_access uda
-                    ON uda.userid = u.id
-                GROUP BY
-                    u.id,
-                    u.username,
-                    u.role,
-                    u.account_status
-                ORDER BY u.username";
+                $@"
+                    SELECT
+                        u.id,
+                        u.username,
+                        u.role,
+                        u.account_status,
+                        COUNT(uda.dataset_name) AS dataset_count
+                    FROM users u
+                    LEFT JOIN user_dataset_access uda
+                        ON uda.userid = u.id
+                    {whereClause}
+                    GROUP BY
+                        u.id,
+                        u.username,
+                        u.role,
+                        u.account_status
+                    ORDER BY u.username";
 
                 using (NpgsqlDataAdapter da =
                     new NpgsqlDataAdapter(query, conn))
@@ -540,16 +435,7 @@ namespace ongc_webapp
 
         // ════════════════════════════════════════════════════════ 
         //  HELPERS
-        // ════════════════════════════════════════════════════════
-
-      
-
-        
-
-       
-
-
-        
+        // 
 
         private void ShowFeedback(Label label, string message, bool success)
         {
@@ -559,7 +445,22 @@ namespace ongc_webapp
                 : System.Drawing.Color.Crimson;
         }
 
-        
-        
+        protected void btnShowAllUsers_Click(
+                        object sender,
+                        EventArgs e)
+        {
+            ShowPendingOnly = false;
+            BindUserAccessGrid();
+        }
+
+        protected void btnShowPending_Click(
+            object sender,
+            EventArgs e)
+        {
+            ShowPendingOnly = true;
+            BindUserAccessGrid();
+        }
+
+
     }
 }

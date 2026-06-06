@@ -1,73 +1,31 @@
 # ONGC Document Vault
 
-A secure and efficient document management system developed for organizing, storing, searching, and managing ONGC-related documents digitally.
+The ONGC Document Vault is an enterprise-level search and indexing system designed for the efficient retrieval and management of technical assets and document metadata. The application provides a robust interface for engineers and administrators to navigate complex datasets across multiple sectors and circles.
 
----
+## Features
 
-## 🚀 Features
+- Advanced Metadata Search: Supports both UNION and INTERSECTION search modes for precise querying.
+- Dynamic Filter Engine: Enables granular data filtering based on location, progress, department, and other key metadata fields.
+- Optimized Data Grid: Features a high-performance, responsive table with sticky column pinning (View and File Name) to ensure readability during horizontal navigation.
+- Efficient UI/UX: Implements a clean, centered search interface with programmatic column reordering for improved workflow.
 
-* 📂 Upload and manage documents
-* 🔍 Quick document search
-* 🗂 Organized document categorization
-* 🔐 Secure document handling
-* 📄 Easy document viewing
-* 💻 User-friendly interface
+## Tech Stack
 
----
+- Framework: ASP.NET WebForms (C#)
+- Frontend: HTML5, CSS3, JavaScript (Vanilla)
+- Database: SQL Server / MySQL
+- Development Environment: Visual Studio 2022
 
-## 🛠 Tech Stack
+## Setup Instructions
 
-### Frontend
+1. Clone the repository:
+   git clone https://github.com/DebanganaDutta/ongc-document-vault.git
 
-* HTML
-* CSS
-* JavaScript
-* Bootstrap
+2. Open the solution file (.sln) in Visual Studio.
 
-### Backend
+3. Restore NuGet packages. Ensure all dependencies are updated to the latest stable versions to address security vulnerabilities.
 
-* ASP.NET WebForms
-* C#
+4. Configure the database connection string in the Web.config file to match your local environment.
 
-### Database
+5. Build the solution and run the application via IIS Express.
 
-* PostgreSQL
-
----
-
-## 📁 Project Structure
-
-```bash
-ongc-document-vault/
-│
-├── App_Code/                     # Backend business logic and helper classes
-├── App_Data/                     # Application data files
-├── Content/                      # CSS stylesheets and frontend assets
-├── fonts/                        # Font files used in the project
-├── images/                       # Images and icons
-├── js/                           # JavaScript files
-├── obj/                          # Build-generated files
-├── packages/                     # NuGet packages
-├── Properties/                   # Project properties
-├── uploads/                      # Uploaded documents storage
-│
-├── About.aspx
-├── Contact.aspx
-├── Default.aspx
-├── Login.aspx
-├── Register.aspx
-├── Upload.aspx
-├── Search.aspx
-├── Site.Master
-├── Web.config
-├── packages.config
-└── README.md
-```
-
----
-
-## ⚙️ Clone the Repository
-
-```bash
-git clone https://github.com/Debangana-Dutta/ongc-document-vault.git
-```

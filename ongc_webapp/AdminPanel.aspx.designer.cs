@@ -15,15 +15,6 @@ namespace ongc_webapp
     {
 
         /// <summary>
-        /// btnShowPending control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnShowPending;
-
-        /// <summary>
         /// btnShowAllUsers control.
         /// </summary>
         /// <remarks>
@@ -33,22 +24,13 @@ namespace ongc_webapp
         protected global::System.Web.UI.WebControls.Button btnShowAllUsers;
 
         /// <summary>
-        /// gvPendingUsers control.
+        /// btnShowPending control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvPendingUsers;
-
-        /// <summary>
-        /// lblApprovalFeedback control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblApprovalFeedback;
+        protected global::System.Web.UI.WebControls.Button btnShowPending;
 
         /// <summary>
         /// gvUserAccess control.
