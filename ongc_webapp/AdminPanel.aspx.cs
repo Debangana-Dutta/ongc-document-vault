@@ -137,10 +137,19 @@ namespace ongc_webapp
                 return;
             }
 
-            if(!IsPostBack)
+            if (!IsPostBack)
             {
                 BindUserAccessGrid();
 
+                ShowTab("users");
+            }
+            else
+            {
+                if (ViewState["AdminTab"] != null)
+                {
+                    ShowTab(
+                        ViewState["AdminTab"].ToString());
+                }
             }
         }
 
@@ -459,6 +468,77 @@ namespace ongc_webapp
         {
             ShowPendingOnly = true;
             BindUserAccessGrid();
+        }
+
+        private void ShowTab(string tab)
+        {
+            pnlUserManagement.Visible = false;
+            pnlUpload.Visible = false;
+            pnlActivity.Visible = false;
+
+            ResetTabStyles();
+
+            switch (tab)
+            {
+                case "users":
+
+                    pnlUserManagement.Visible = true;
+
+                    btnTabUsers.CssClass =
+                        "sidebar-btn active";
+
+                    break;
+
+                case "upload":
+
+                    pnlUpload.Visible = true;
+
+                    btnTabUpload.CssClass =
+                        "sidebar-btn active";
+
+                    break;
+
+                case "activity":
+
+                    pnlActivity.Visible = true;
+
+                    btnTabActivity.CssClass =
+                        "sidebar-btn active";
+
+                    break;
+            }
+
+            ViewState["AdminTab"] = tab;
+        }
+
+        //tab highlighting code
+
+        private void ResetTabStyles()
+        {
+            btnTabUsers.CssClass = "sidebar-btn";
+            btnTabUpload.CssClass = "sidebar-btn";
+            btnTabActivity.CssClass = "sidebar-btn";
+        }
+
+        protected void btnTabUsers_Click(
+        object sender,
+        EventArgs e)
+        {
+            ShowTab("users");
+        }
+
+        protected void btnTabUpload_Click(
+            object sender,
+            EventArgs e)
+        {
+            ShowTab("upload");
+        }
+
+        protected void btnTabActivity_Click(
+            object sender,
+            EventArgs e)
+        {
+            ShowTab("activity");
         }
 
 

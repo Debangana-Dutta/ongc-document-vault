@@ -15,6 +15,42 @@ namespace ongc_webapp
     {
 
         /// <summary>
+        /// btnTabUsers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnTabUsers;
+
+        /// <summary>
+        /// btnTabUpload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnTabUpload;
+
+        /// <summary>
+        /// btnTabActivity control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnTabActivity;
+
+        /// <summary>
+        /// pnlUserManagement control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlUserManagement;
+
+        /// <summary>
         /// btnShowAllUsers control.
         /// </summary>
         /// <remarks>
@@ -40,6 +76,15 @@ namespace ongc_webapp
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView gvUserAccess;
+
+        /// <summary>
+        /// pnlUpload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlUpload;
 
         /// <summary>
         /// txtDatasetName control.
@@ -76,6 +121,15 @@ namespace ongc_webapp
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblStatusFeedback;
+
+        /// <summary>
+        /// pnlActivity control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlActivity;
 
         /// <summary>
         /// pnlPasswordReset control.

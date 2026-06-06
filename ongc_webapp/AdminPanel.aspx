@@ -251,9 +251,75 @@
         background: #f1f3f4;
         margin: 20px 0;
     }
+
+    .admin-layout {
+    display: flex;
+    gap: 24px;
+}
+
+    .admin-sidebar {
+        width: 220px;
+        flex-shrink: 0;
+    }
+
+    .admin-content {
+        flex: 1;
+    }
+
+    .sidebar-btn {
+        width: 100%;
+        display: block;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        border: none;
+        border-radius: 8px;
+        background: #f3f4f6;
+        color: #374151;
+        text-align: left;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .sidebar-btn:hover {
+        background: #e5e7eb;
+    }
+
+    .sidebar-btn.active {
+        background: #7a0616;
+        color: white;
+    }
+
 </style>
 
 <div class="admin-page">
+    <div class="admin-layout">
+
+        <div class="admin-sidebar">
+
+            <asp:Button
+                ID="btnTabUsers"
+                runat="server"
+                Text="User Management"
+                CssClass="sidebar-btn"
+                OnClick="btnTabUsers_Click" />
+
+            <asp:Button
+                ID="btnTabUpload"
+                runat="server"
+                Text="Upload Datasets"
+                CssClass="sidebar-btn"
+                OnClick="btnTabUpload_Click" />
+
+            <asp:Button
+                ID="btnTabActivity"
+                runat="server"
+                Text="User Activity Log"
+                CssClass="sidebar-btn"
+                OnClick="btnTabActivity_Click" />
+
+        </div>
+
+        <div class="admin-content">
 
     <div class="admin-page-title">ONGC Admin Panel</div>
 
@@ -271,7 +337,9 @@
          SECTION 2 – ACCESS POLICY
     ══════════════════════════════════════════ -->
 
-    
+    <asp:Panel
+    ID="pnlUserManagement"
+    runat="server">
 
     <div class="admin-card">
 
@@ -381,13 +449,21 @@
     </asp:GridView>
 
 </div>
+</div>
+</div>
+</asp:Panel> 
 
 
     <!-- ══════════════════════════════════════════
          SECTION 3 – DOCUMENT INGESTION
     ══════════════════════════════════════════ -->
+    <asp:Panel
+    ID="pnlUpload"
+    runat="server"
+    Visible="false">
+
     <div class="admin-card">
-        <h4>Document Ingestion (Excel Upload)</h4>
+    <h4>Document Ingestion (Excel Upload)</h4>
 
         <div class="form-row" style="align-items:center;">
 
@@ -422,6 +498,25 @@
         <asp:Label ID="lblStatusFeedback" runat="server"
             CssClass="feedback-label" />
     </div>
+
+        </asp:Panel>
+
+        <asp:Panel
+        ID="pnlActivity"
+        runat="server"
+        Visible="false">
+
+        <div class="admin-card">
+
+            <h4>User Activity Log</h4>
+
+            <p>
+                Activity logs will appear here.
+            </p>
+
+        </div>
+
+    </asp:Panel>
 
     <asp:Panel
     ID="pnlPasswordReset"
@@ -473,5 +568,6 @@
         OnClick="btnCancelPassword_Click" />
 
 </asp:Panel>
+</div> </div> 
 
 </asp:Content>
