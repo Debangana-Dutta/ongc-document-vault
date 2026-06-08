@@ -53,29 +53,21 @@ namespace ongc_webapp
             if (Session["UserID"] == null)
                 return;
 
-            RestoreDynamicFilters();
-
             BindDatasetFilter();
+
+            RestoreDynamicFilters();
         }
 
         // ════════════════════════════════════════════════════════
         //  PAGE LOAD
         // ════════════════════════════════════════════════════════
 
-        private List<string> GetSelectedDatasets()
+        private string GetSelectedDataset()
         {
-            List<string> datasets =
-                new List<string>();
+            if (string.IsNullOrEmpty(rblDatasets.SelectedValue))
+                return "";
 
-            foreach (ListItem item in cblDatasets.Items)
-            {
-                if (item.Selected)
-                {
-                    datasets.Add(item.Value);
-                }
-            }
-
-            return datasets;
+            return rblDatasets.SelectedValue;
         }
 
 
@@ -93,6 +85,7 @@ namespace ongc_webapp
             if (!IsPostBack)
             {
                 BindDatasetFilter();
+                RestoreDynamicFilters();
                 BindDynamicVaultData();
             }
         }
@@ -160,9 +153,17 @@ namespace ongc_webapp
                     conn.Open();
 
                     string query =
-                        @"SELECT metadata_name
-                  FROM user_metadata_access
-                  WHERE userid = @userid";
+                      @"SELECT metadata_name
+                      FROM user_metadata_access
+                      WHERE userid = @userid
+                      AND dataset_name = @dataset";
+
+                    string dataset = GetSelectedDataset();
+
+                    if (string.IsNullOrWhiteSpace(dataset))
+                    {
+                        return new HashSet<string>();
+                    }
 
                     using (NpgsqlCommand cmd =
                         new NpgsqlCommand(query, conn))
@@ -170,6 +171,10 @@ namespace ongc_webapp
                         cmd.Parameters.AddWithValue(
                             "userid",
                             userId);
+
+                        cmd.Parameters.AddWithValue(
+                            "dataset",
+                            dataset);
 
                         using (NpgsqlDataReader reader =
                             cmd.ExecuteReader())
@@ -231,20 +236,29 @@ namespace ongc_webapp
                     conn.Open();
 
                     // Use Postgres's jsonb_object_keys for efficiency
+                    string selectedDataset = GetSelectedDataset();
+
                     string query =
                         "SELECT DISTINCT jsonb_object_keys(dynamic_metadata) " +
                         "FROM indexed_documents " +
                         "WHERE dynamic_metadata IS NOT NULL " +
+                        "AND dataset_name = @dataset " +
                         "ORDER BY 1";
 
-                    using (NpgsqlCommand cmd =
-                        new NpgsqlCommand(query, conn))
-                    using (NpgsqlDataReader reader =
-                        cmd.ExecuteReader())
+                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
                     {
-                        while (reader.Read())
-                            allKeys.Add(reader.GetString(0));
+                        cmd.Parameters.AddWithValue(
+                            "dataset",
+                            selectedDataset);
+
+                        using (NpgsqlDataReader reader =
+                            cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                                allKeys.Add(reader.GetString(0));
+                        }
                     }
+                    
                 }
             }
             catch (Exception ex)
@@ -254,11 +268,23 @@ namespace ongc_webapp
             }
 
             // ── Filter keys against the user's policy ──────────
-            HashSet<string> visibleKeys =
-                new HashSet<string>(
-                    allKeys.Where(k =>
-                        allowedCols.Contains(k)),
-                    StringComparer.OrdinalIgnoreCase);
+            HashSet<string> visibleKeys;
+
+            if (allowedCols == null)
+            {
+                visibleKeys =
+                    new HashSet<string>(
+                        allKeys,
+                        StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                visibleKeys =
+                    new HashSet<string>(
+                        allKeys.Where(k =>
+                            allowedCols.Contains(k)),
+                        StringComparer.OrdinalIgnoreCase);
+            }
 
             // ── Build the sidebar controls ─────────────────────
             GenerateDynamicFilters(visibleKeys);
@@ -278,6 +304,7 @@ namespace ongc_webapp
         private void GenerateDynamicFilters(HashSet<string> availableColumns)
         {
             phDynamicFilters.Controls.Clear();
+            cblColumns.Items.Clear();
 
             if (availableColumns == null || availableColumns.Count == 0)
             {
@@ -440,15 +467,16 @@ namespace ongc_webapp
             List<string> allowedDatasets =
             GetAllowedDatasets();
 
-            List<string> selectedDatasets =
-            GetSelectedDatasets();
+            string selectedDataset = GetSelectedDataset();
 
-            if (selectedDatasets.Count > 0)
+            if (!string.IsNullOrEmpty(selectedDataset))
             {
                 allowedDatasets =
                     allowedDatasets
                     .Where(d =>
-                        selectedDatasets.Contains(d))
+                        d.Equals(
+                            selectedDataset,
+                            StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 
@@ -868,20 +896,30 @@ namespace ongc_webapp
             List<string> datasets =
                 GetAllowedDatasets();
 
-            cblDatasets.Items.Clear();
+            rblDatasets.Items.Clear();
 
             foreach (string dataset in datasets)
             {
-                ListItem item =
-                    new ListItem(dataset, dataset);
-
-                if (!IsPostBack)
-                {
-                    item.Selected = true;
-                }
-
-                cblDatasets.Items.Add(item);
+                rblDatasets.Items.Add(
+                    new ListItem(dataset, dataset));
             }
+
+            if (rblDatasets.Items.Count > 0 &&
+                string.IsNullOrEmpty(rblDatasets.SelectedValue))
+            {
+                rblDatasets.SelectedIndex = 0;
+            }
+        }
+
+        protected void rblDatasets_SelectedIndexChanged(
+                        object sender,
+                        EventArgs e)
+        {
+            CurrentPage = 1;
+
+            RestoreDynamicFilters();
+
+            BindDynamicVaultData();
         }
 
 

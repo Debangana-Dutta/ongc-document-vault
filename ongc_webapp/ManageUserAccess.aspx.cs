@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Web.UI.WebControls;
 using Npgsql;
 using System.Linq;
+using System.Web.UI;
 
 
 namespace ongc_webapp
@@ -81,6 +82,9 @@ namespace ongc_webapp
                 .Select(i => i.Value)
                 .ToList();
 
+            string datasetString =
+                string.Join(",", datasets);
+
             if (datasets.Count == 0)
             {
                 lblStatus.Text =
@@ -88,19 +92,26 @@ namespace ongc_webapp
 
                 return;
             }
-
-
             List<string> metadata =
-                cblMetadata.Items.Cast<ListItem>()
-                .Where(i => i.Selected)
-                .Select(i => i.Value)
-                .ToList();
+            new List<string>();
 
-            string datasetString =
-                string.Join(",", datasets);
+            foreach (Control ctrl in phMetadataSections.Controls)
+            {
+                if (ctrl is CheckBoxList cbl)
+                {
+                    foreach (ListItem item in cbl.Items)
+                    {
+                        if (item.Selected)
+                        {
+                            metadata.Add(item.Value);
+                        }
+                    }
+                }
+            }
 
             string metadataString =
                 string.Join(",", metadata);
+
 
             using (NpgsqlConnection conn = new NpgsqlConnection(connString))
             {
@@ -235,14 +246,6 @@ namespace ongc_webapp
                                     datasets.Contains(
                                         item.Value);
                             }
-
-                            foreach (ListItem item
-                                in cblMetadata.Items)
-                            {
-                                item.Selected =
-                                    metadata.Contains(
-                                        item.Value);
-                            }
                         }
                     }
                 }
@@ -253,8 +256,8 @@ namespace ongc_webapp
         }
 
         protected void Page_Load(
-            object sender,
-            EventArgs e)
+                        object sender,
+                        EventArgs e)
         {
             if (Session["UserID"] == null)
             {
@@ -276,10 +279,12 @@ namespace ongc_webapp
                 LoadUserInfo();
                 LoadDatasets();
                 LoadUserDatasets();
-                LoadMetadataForSelectedDatasets();
-                LoadUserMetadata();
             }
+
+            BuildMetadataSections();
         }
+
+
 
         private void LoadUserInfo()
         {
@@ -397,132 +402,159 @@ namespace ongc_webapp
         }
 
         protected void btnLoadMetadata_Click(
-            object sender,
-            EventArgs e)
+                        object sender,
+                        EventArgs e)
         {
-            LoadMetadataForSelectedDatasets();
-            LoadUserMetadata();
-        }
-
-        private void LoadMetadataForSelectedDatasets()
-        {
-            List<string> datasets =
-                new List<string>();
-
-            foreach (ListItem item in cblDatasets.Items)
-            {
-                if (item.Selected)
-                    datasets.Add(item.Value);
-            }
-
-            cblMetadata.Items.Clear();
-
-            if (datasets.Count == 0)
-                return;
-
-            using (NpgsqlConnection conn =
-                new NpgsqlConnection(connString))
-            {
-                conn.Open();
-
-                string query =
-                @"SELECT DISTINCT
-                    jsonb_object_keys(dynamic_metadata)
-                  FROM indexed_documents
-                  WHERE dataset_name = ANY(@datasets)
-                  ORDER BY 1";
-
-                using (NpgsqlCommand cmd =
-                    new NpgsqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue(
-                        "datasets",
-                        datasets.ToArray());
-
-                    using (NpgsqlDataReader dr =
-                        cmd.ExecuteReader())
-                    {
-                        while (dr.Read())
-                        {
-                            string col =
-                                dr.GetString(0);
-
-                            cblMetadata.Items.Add(
-                                new ListItem(col, col));
-                        }
-                    }
-                }
-            }
-        }
-
-        private void LoadUserMetadata()
-        {
-            using (NpgsqlConnection conn =
-                new NpgsqlConnection(connString))
-            {
-                conn.Open();
-
-                string query =
-                @"SELECT metadata_name
-                  FROM user_metadata_access
-                  WHERE userid=@userid";
-
-                using (NpgsqlCommand cmd =
-                    new NpgsqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue(
-                        "userid",
-                        UserId);
-
-                    using (NpgsqlDataReader dr =
-                        cmd.ExecuteReader())
-                    {
-                        HashSet<string> metadata =
-                            new HashSet<string>();
-
-                        while (dr.Read())
-                        {
-                            metadata.Add(
-                                dr["metadata_name"]
-                                    .ToString());
-                        }
-
-                        foreach (ListItem item in cblMetadata.Items)
-                        {
-                            item.Selected =
-                                metadata.Contains(
-                                    item.Value);
-                        }
-                    }
-                }
-            }
+            BuildMetadataSections();
         }
 
         protected void chkSelectAllDatasets_CheckedChanged(
-        object sender,
-        EventArgs e)
+                        object sender,
+                        EventArgs e)
         {
             foreach (ListItem item in cblDatasets.Items)
             {
                 item.Selected = chkSelectAllDatasets.Checked;
             }
 
-            LoadMetadataForSelectedDatasets();
+            BuildMetadataSections();
         }
 
-        protected void chkSelectAllMetadata_CheckedChanged(
-            object sender,
-            EventArgs e)
+        private void BuildMetadataSections()
         {
-            foreach (ListItem item in cblMetadata.Items)
+            phMetadataSections.Controls.Clear();
+
+            foreach (ListItem datasetItem
+                in cblDatasets.Items)
             {
-                item.Selected = chkSelectAllMetadata.Checked;
+                if (!datasetItem.Selected)
+                    continue;
+
+                string dataset =
+                    datasetItem.Value;
+                Literal startSection =
+                new Literal();
+
+                startSection.Text =
+                    phMetadataSections.Controls.Count == 0
+                    ? "<details open>"
+                    : "<details>";
+
+                phMetadataSections.Controls.Add(
+                    startSection);
+
+                phMetadataSections.Controls.Add(
+                    new Literal
+                    {
+                        Text =
+                        "<summary style='cursor:pointer;" +
+                        "font-weight:bold;" +
+                        "padding:8px;" +
+                        "background:#f3f4f6;" +
+                        "border-radius:4px;" +
+                        "margin-bottom:8px;'>" +
+                        dataset +
+                        "</summary>"
+                    });
+
+
+                CheckBoxList cbl =
+                    new CheckBoxList();
+
+                cbl.ID =
+                    "meta_" + dataset;
+
+                HashSet<string> selectedMetadata =
+                        new HashSet<string>();
+
+                using (NpgsqlConnection conn = new NpgsqlConnection(connString))
+                {
+                    conn.Open();
+
+                    string query =
+                    @"SELECT metadata_name
+                      FROM user_metadata_access
+                      WHERE userid=@userid
+                      AND dataset_name=@dataset";
+
+                    using (NpgsqlCommand cmd =
+                        new NpgsqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "userid",
+                            UserId);
+
+                        cmd.Parameters.AddWithValue(
+                            "dataset",
+                            dataset);
+
+                        using (NpgsqlDataReader dr =
+                            cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                selectedMetadata.Add(
+                                    dr["metadata_name"]
+                                        .ToString());
+                            }
+                        }
+                    }
+                }
+
+                
+
+                using (NpgsqlConnection conn =
+                    new NpgsqlConnection(connString))
+                {
+                    conn.Open();
+
+                    string query =
+                    @"SELECT DISTINCT
+                jsonb_object_keys(dynamic_metadata)
+              FROM indexed_documents
+              WHERE dataset_name=@dataset
+              ORDER BY 1";
+
+                    using (NpgsqlCommand cmd =
+                        new NpgsqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "dataset",
+                            dataset);
+
+                        using (NpgsqlDataReader dr =
+                            cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                string col =
+                                    dr.GetString(0);
+
+                                ListItem li =
+                                    new ListItem(col, col);
+
+                                li.Selected =
+                                    selectedMetadata.Contains(col);
+
+                                cbl.Items.Add(li);
+                            }
+                        }
+                    }
+                }
+
+                phMetadataSections.Controls.Add(cbl);
+
+                phMetadataSections.Controls.Add(
+                    new Literal
+                    {
+                        Text = "</details><br/>"
+                    });
             }
         }
 
         protected void btnSave_Click(
-            object sender,
-            EventArgs e)
+                        object sender,
+                        EventArgs e)
         {
             using (NpgsqlConnection conn =
                 new NpgsqlConnection(connString))
@@ -553,8 +585,8 @@ namespace ongc_webapp
                               WHERE userid=@userid",
                             conn,
                             tx)
-                        {
-                            Parameters =
+                                                {
+                                                    Parameters =
                             {
                                 new NpgsqlParameter(
                                     "userid",
@@ -570,9 +602,15 @@ namespace ongc_webapp
                             using (NpgsqlCommand cmd =
                                 new NpgsqlCommand(
                                     @"INSERT INTO user_dataset_access
-                                      (userid,dataset_name)
-                                      VALUES
-                                      (@userid,@dataset)",
+                                        (
+                                            userid,
+                                            dataset_name
+                                        )
+                                        VALUES
+                                        (
+                                            @userid,
+                                            @dataset
+                                        )",
                                     conn,
                                     tx))
                             {
@@ -588,29 +626,65 @@ namespace ongc_webapp
                             }
                         }
 
-                        foreach (ListItem item in cblMetadata.Items)
+                        foreach (ListItem datasetItem in cblDatasets.Items)
                         {
-                            if (!item.Selected)
+                            if (!datasetItem.Selected)
                                 continue;
 
-                            using (NpgsqlCommand cmd =
-                                new NpgsqlCommand(
-                                    @"INSERT INTO user_metadata_access
-                                      (userid,metadata_name)
-                                      VALUES
-                                      (@userid,@metadata)",
-                                    conn,
-                                    tx))
+                            string dataset =
+                                datasetItem.Value;
+
+                            CheckBoxList cbl = null;
+
+                            foreach (Control ctrl in phMetadataSections.Controls)
                             {
-                                cmd.Parameters.AddWithValue(
-                                    "userid",
-                                    UserId);
+                                if (ctrl is CheckBoxList &&
+                                    ctrl.ID == "meta_" + dataset)
+                                {
+                                    cbl = (CheckBoxList)ctrl;
+                                    break;
+                                }
+                            }
 
-                                cmd.Parameters.AddWithValue(
-                                    "metadata",
-                                    item.Value);
+                            if (cbl == null)
+                                continue;
 
-                                cmd.ExecuteNonQuery();
+                            foreach (ListItem item in cbl.Items)
+                            {
+                                if (!item.Selected)
+                                    continue;
+
+                                using (NpgsqlCommand cmd =
+                                    new NpgsqlCommand(
+                                        @"INSERT INTO user_metadata_access
+                                              (
+                                                  userid,
+                                                  dataset_name,
+                                                  metadata_name
+                                              )
+                                              VALUES
+                                              (
+                                                  @userid,
+                                                  @dataset,
+                                                  @metadata
+                                              )",
+                                        conn,
+                                        tx))
+                                {
+                                    cmd.Parameters.AddWithValue(
+                                        "userid",
+                                        UserId);
+
+                                    cmd.Parameters.AddWithValue(
+                                        "dataset",
+                                        dataset);
+
+                                    cmd.Parameters.AddWithValue(
+                                        "metadata",
+                                        item.Value);
+
+                                    cmd.ExecuteNonQuery();
+                                }
                             }
                         }
 
@@ -623,7 +697,6 @@ namespace ongc_webapp
                     }
                 }
             }
-
             Response.Redirect(
                 "AdminPanel.aspx");
         }

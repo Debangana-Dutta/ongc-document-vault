@@ -193,6 +193,7 @@
             <div class="card">
 
                 <h3>Step 2 — Metadata Visibility</h3>
+                <br /><br />
 
                 <p class="section-title">
                     Select which metadata columns should appear
@@ -201,21 +202,10 @@
 
                 <div class="checkbox-box">
 
-                    <asp:CheckBox
-                        ID="chkSelectAllMetadata"
-                        runat="server"
-                        Text="Select All Metadata Columns"
-                        AutoPostBack="true"
-                        OnCheckedChanged="chkSelectAllMetadata_CheckedChanged" />
-
-                    <br />
-
-                    <asp:CheckBoxList
-                        ID="cblMetadata"
-                        runat="server"
-                        RepeatDirection="Vertical"
-                        RepeatLayout="Table">
-                    </asp:CheckBoxList>
+                    <asp:PlaceHolder
+                        ID="phMetadataSections"
+                        runat="server">
+                    </asp:PlaceHolder>
 
                 </div>
 

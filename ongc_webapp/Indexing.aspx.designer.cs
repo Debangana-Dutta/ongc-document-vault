@@ -78,13 +78,13 @@ namespace ongc_webapp
         protected global::System.Web.UI.WebControls.PlaceHolder phDynamicFilters;
 
         /// <summary>
-        /// cblDatasets control.
+        /// rblDatasets control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBoxList cblDatasets;
+        protected global::System.Web.UI.WebControls.RadioButtonList rblDatasets;
 
         /// <summary>
         /// btnApplyFilters control.

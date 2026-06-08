@@ -779,12 +779,14 @@ window.onload = function () {
 
             <div class="metadata-scroll-area">
 
-                <asp:CheckBoxList
-                    ID="cblDatasets"
+                <asp:RadioButtonList
+                    ID="rblDatasets"
                     runat="server"
+                    AutoPostBack="true"
                     RepeatDirection="Vertical"
-                    RepeatLayout="Table">
-                </asp:CheckBoxList>
+                    RepeatLayout="Table"
+                    OnSelectedIndexChanged="rblDatasets_SelectedIndexChanged">
+                </asp:RadioButtonList>
 
             </div>
 

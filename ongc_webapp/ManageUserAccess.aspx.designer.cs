@@ -98,22 +98,13 @@ namespace ongc_webapp
         protected global::System.Web.UI.WebControls.Button btnLoadMetadata;
 
         /// <summary>
-        /// chkSelectAllMetadata control.
+        /// phMetadataSections control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkSelectAllMetadata;
-
-        /// <summary>
-        /// cblMetadata control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBoxList cblMetadata;
+        protected global::System.Web.UI.WebControls.PlaceHolder phMetadataSections;
 
         /// <summary>
         /// btnSave control.
