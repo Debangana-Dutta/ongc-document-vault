@@ -23,19 +23,11 @@ namespace ongc_webapp
             }
         }
 
-        protected void btnAdminSubmit_Click(object sender, EventArgs e)
-        {
-
-        }
-
         protected void btnLogin_Click(object sender, EventArgs e)
         {
+            string authMode = "LOGIN";
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text.Trim();
-
-            string authMode = "h";
-
-
 
             // USERNAME VALIDATION
             if (string.IsNullOrEmpty(username))
@@ -98,8 +90,7 @@ namespace ongc_webapp
             {
                 string confirmPassword =
                     txtConfirmPassword.Text.Trim();
-                string role =
-                    hdnRegAcctType.Value.Trim();
+                string role = "EMPLOYEE";
 
 
                 if (password != confirmPassword)

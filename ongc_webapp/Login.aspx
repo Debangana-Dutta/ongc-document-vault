@@ -335,14 +335,7 @@
     <div class="form-panel">
 
         <!-- Role tabs: Employee / Admin -->
-        <div class="role-tabs">
-            <button type="button" class="role-tab active" id="tabEmployee" onclick="setRole('EMPLOYEE')">
-                <i class="bi bi-person-badge"></i> Employee
-            </button>
-            <button type="button" class="role-tab" id="tabAdmin" onclick="setRole('ADMIN')">
-                <i class="bi bi-shield-lock"></i> Admin
-            </button>
-        </div>
+        
 
         <!-- Inline alert (shared) -->
         <div class="inline-alert error" id="alertBox">
@@ -351,7 +344,7 @@
         </div>
 
         <!-- Hidden state fields -->
-        <asp:HiddenField ID="hdnRegAcctType"    runat="server" Value="EMPLOYEE" />
+        
         
 
         <!-- ═══════════════════════════════════════════════
@@ -377,20 +370,7 @@
             </div>
 
             <!-- Register: account type selector -->
-            <div id="reg-acct-type-group" style="display:none; margin-bottom:14px;">
-                <p class="acct-type-label">Registering as</p>
-                <div class="acct-type-row">
-                    <button type="button" class="acct-type-btn active" id="acctEmployee"
-                            onclick="setRegAcctType('EMPLOYEE')">
-                        <i class="bi bi-person-badge"></i> Employee
-                    </button>
-                    <button type="button" class="acct-type-btn" id="acctAdmin"
-                            onclick="setRegAcctType('ADMIN')">
-                        <i class="bi bi-shield-lock"></i> Admin
-                    </button>
-                </div>
-            </div>
-
+            
             <div class="field-group">
                 <label>User ID / CPF Number</label>
                 <div class="input-wrap no-eye">
@@ -438,28 +418,6 @@
                     <asp:TextBox ID="txtDepartment" runat="server" placeholder="e.g. Drilling, Finance, HR…"></asp:TextBox>
                 </div>
             </div>
-
-            <div class="field-group" id="emp-adminkey-group" style="display:none;">
-                <label>Admin Authorisation Key</label>
-                <div class="input-wrap">
-                    <i class="bi bi-key-fill ico-lead"></i>
-                    <asp:TextBox ID="txtRegAdminKey" runat="server" TextMode="Password" placeholder="Key issued by system admin"></asp:TextBox>
-                    <button type="button" class="btn-eye" id="eyeRegAdminKey"
-                            onclick="togglePwd('<%=txtRegAdminKey.ClientID%>','eyeRegAdminKey')">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-                <p class="field-note"><i class="bi bi-info-circle"></i> Required to register an admin account.</p>
-            </div>
-
-            <div class="field-group" id="emp-desig-group" style="display:none;">
-                <label>Designation / Role</label>
-                <div class="input-wrap no-eye">
-                    <i class="bi bi-briefcase ico-lead"></i>
-                    <asp:TextBox ID="txtRegDesignation" runat="server" placeholder="e.g. GM – IT, HR Head…"></asp:TextBox>
-                </div>
-            </div>
-
             <asp:Button ID="btnLogin" runat="server" Text="LOGIN"
                 CssClass="btn-submit" OnClick="btnLogin_Click" />
 
@@ -483,155 +441,6 @@
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════
-             ADMIN SECTION  (Login + Register + Recovery)
-             ═══════════════════════════════════════════════ -->
-        <div id="adm-section" style="display:none;">
-
-            <!-- Back button (register / recovery views) -->
-            <button type="button" class="back-link" id="admBackBtn" onclick="switchAdminView('LOGIN')">
-                <i class="bi bi-arrow-left"></i> Back to Admin Login
-            </button>
-
-            <!-- Admin badge — only on login view -->
-            <div class="admin-badge" id="adm-badge"><i class="bi bi-shield-fill-check"></i> Administrator Access</div>
-
-            <!-- Headers -->
-            <div class="sec-head" id="adm-hdr-login">
-                <h2>Admin Sign In</h2>
-                <p>Restricted — authorised personnel only</p>
-            </div>
-            <div class="sec-head" id="adm-hdr-register" style="display:none;">
-                <h2>Create Admin Account</h2>
-                <p>Register a new administrator account</p>
-            </div>
-            <div class="sec-head" id="adm-hdr-recovery" style="display:none;">
-                <h2>Recover Admin Password</h2>
-                <p>We'll send a reset link to your corporate email</p>
-            </div>
-
-            <!-- ── LOGIN: Employee ID ── -->
-            <div class="field-group" id="adm-empid-group">
-                <label>Employee ID</label>
-                <div class="input-wrap no-eye">
-                    <i class="bi bi-person-badge ico-lead"></i>
-                    <asp:TextBox ID="txtAdminEmpID" runat="server" placeholder="Admin Employee ID"></asp:TextBox>
-                </div>
-            </div>
-
-            <!-- ── REGISTER: Full Name ── -->
-            <div class="field-group" id="adm-name-group" style="display:none;">
-                <label>Full Name</label>
-                <div class="input-wrap no-eye">
-                    <i class="bi bi-person ico-lead"></i>
-                    <asp:TextBox ID="txtAdminFullName" runat="server" placeholder="Your full name"></asp:TextBox>
-                </div>
-            </div>
-
-            <!-- ── REGISTER: New Employee ID ── -->
-            <div class="field-group" id="adm-reg-empid-group" style="display:none;">
-                <label>Employee ID</label>
-                <div class="input-wrap no-eye">
-                    <i class="bi bi-person-badge ico-lead"></i>
-                    <asp:TextBox ID="txtAdminRegEmpID" runat="server" placeholder="Your Employee ID"></asp:TextBox>
-                </div>
-            </div>
-
-            <!-- ── ALL: Corporate Email ── -->
-            <div class="field-group" id="adm-email-group" style="display:none;">
-                <label>Corporate Email</label>
-                <div class="input-wrap no-eye">
-                    <i class="bi bi-envelope ico-lead"></i>
-                    <asp:TextBox ID="txtAdminEmail" runat="server" placeholder="yourname@ongc.co.in"></asp:TextBox>
-                </div>
-            </div>
-
-            <!-- ── LOGIN + REGISTER: Password ── -->
-            <div class="field-group" id="adm-pwd-group">
-                <label>Password</label>
-                <div class="input-wrap">
-                    <i class="bi bi-lock ico-lead"></i>
-                    <asp:TextBox ID="txtAdminPassword" runat="server" TextMode="Password" placeholder="Admin password"></asp:TextBox>
-                    <button type="button" class="btn-eye" id="eyeAdminPwd"
-                            onclick="togglePwd('<%=txtAdminPassword.ClientID%>','eyeAdminPwd')">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ── REGISTER: Confirm Password ── -->
-            <div class="field-group" id="adm-confirm-group" style="display:none;">
-                <label>Confirm Password</label>
-                <div class="input-wrap">
-                    <i class="bi bi-lock-fill ico-lead"></i>
-                    <asp:TextBox ID="txtAdminConfirmPassword" runat="server" TextMode="Password" placeholder="Re-enter password"></asp:TextBox>
-                    <button type="button" class="btn-eye" id="eyeAdminConfirm"
-                            onclick="togglePwd('<%=txtAdminConfirmPassword.ClientID%>','eyeAdminConfirm')">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ── LOGIN + REGISTER: Admin Access Key ── -->
-            <div class="field-group" id="adm-key-group">
-                <label>Admin Access Key</label>
-                <div class="input-wrap">
-                    <i class="bi bi-key-fill ico-lead"></i>
-                    <asp:TextBox ID="txtAdminKey" runat="server" TextMode="Password" placeholder="One-time or static admin key"></asp:TextBox>
-                    <button type="button" class="btn-eye" id="eyeAdminKey"
-                            onclick="togglePwd('<%=txtAdminKey.ClientID%>','eyeAdminKey')">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-                <p class="field-note"><i class="bi bi-info-circle"></i> Contact your system administrator if you don't have a key.</p>
-            </div>
-
-            <!-- ── REGISTER: Designation ── -->
-            <div class="field-group" id="adm-desig-group" style="display:none;">
-                <label>Designation / Role</label>
-                <div class="input-wrap no-eye">
-                    <i class="bi bi-briefcase ico-lead"></i>
-                    <asp:TextBox ID="txtAdminDesignation" runat="server" placeholder="e.g. GM – IT, HR Head…"></asp:TextBox>
-                </div>
-            </div>
-
-            <!-- ── REGISTER: Department ── -->
-            <div class="field-group" id="adm-dept-group" style="display:none;">
-                <label>Department</label>
-                <div class="input-wrap no-eye">
-                    <i class="bi bi-building ico-lead"></i>
-                    <asp:TextBox ID="txtAdminDepartment" runat="server" placeholder="e.g. IT, Finance, HR…"></asp:TextBox>
-                </div>
-            </div>
-
-           <button type="button"
-                id="btnAdminSubmit"
-                class="btn-submit"
-                onclick="alert('Admin functionality not implemented yet');">
-                ADMIN SIGN IN
-            </button>
-
-            <!-- Footers -->
-            <div class="form-footer" id="adm-footer-login">
-                <div class="footer-row">
-                    <button type="button" class="link-btn" onclick="switchAdminView('RECOVERY')">Forgot Password?</button>
-                    <span>New admin? <button type="button" class="link-btn" onclick="switchAdminView('REGISTER')">Register</button></span>
-                </div>
-            </div>
-            <div class="form-footer" id="adm-footer-register" style="display:none;">
-                Already registered? <button type="button" class="link-btn" onclick="switchAdminView('LOGIN')">Admin Log In</button>
-            </div>
-            <div class="form-footer" id="adm-footer-recovery" style="display:none;">
-                Remembered it? <button type="button" class="link-btn" onclick="switchAdminView('LOGIN')">Back to Admin Login</button>
-            </div>
-
-            <div class="audit-note" id="adm-audit">
-                <i class="bi bi-lock-fill"></i> All access attempts are logged and audited.
-            </div>
-        </div>
-
-    </div>
-</div>
 </form>
 <script>
 // @ts-nocheck
@@ -661,14 +470,7 @@ function switchEmployeeView(mode) {
     show('emp-confirm-group', mode === 'REGISTER');
     show('emp-email-group',   mode !== 'LOGIN');
     show('emp-dept-group',    mode === 'REGISTER');
-    show('reg-acct-type-group', mode === 'REGISTER');
-
-    if (mode === 'REGISTER') {
-        setRegAcctType('EMPLOYEE');
-    } else {
-        show('emp-adminkey-group', false);
-        show('emp-desig-group',    false);
-    }
+    
 
     var back = document.getElementById('backBtn');
     if (back) {
@@ -782,6 +584,8 @@ function show(id, visible) {
     var el = document.getElementById(id);
     if (el) el.style.display = visible ? 'block' : 'none';
 }
+
+switchEmployeeView('LOGIN');
 </script>
 </body>
 </html>
