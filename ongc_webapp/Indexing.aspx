@@ -503,6 +503,20 @@
             color: #7a0616;
             border: 1px solid #dadce0;
         }
+
+        .sql-query-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            background: #f8f9fa;
+
+            overflow-x: auto;
+            white-space: nowrap;
+
+            font-family: Consolas, monospace;
+            font-size: 13px;
+        }
         
 
     </style>
@@ -516,6 +530,17 @@ function toggleFilterTextbox(id) {
     box.style.display =
         (box.style.display === "none" || box.style.display === "")
             ? "block" : "none";
+}
+
+function toggleQueryBar() {
+    var panel =
+        document.getElementById(
+            "sqlQueryPanel");
+
+    panel.style.display =
+        panel.style.display === "none"
+            ? "block"
+            : "none";
 }
 
 function toggleColumnFilter() {
@@ -665,7 +690,7 @@ window.onload = function () {
         }
     }
 };
-</script>
+    </script>
 
     <!-- ══════════════════════════════
          SEARCH HERO
@@ -708,6 +733,21 @@ window.onload = function () {
             onclick="toggleColumnFilter()">
             &#9776;&nbsp; Show Column Filters
         </button>
+
+        <button type="button"
+            class="btn-col-toggle"
+            onclick="toggleQueryBar()">
+            Show SQL Query
+        </button>
+
+        <div id="sqlQueryPanel"
+             style="display:none;margin-top:10px;">
+
+            <asp:Literal
+                ID="litSqlQuery"
+                runat="server" />
+
+        </div>
 
         <div id="columnPanel" class="column-panel">
 

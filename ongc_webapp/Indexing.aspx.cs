@@ -555,11 +555,76 @@ namespace ongc_webapp
 
             query += " ORDER BY uploaded_at DESC LIMIT 500";
 
+            string displayQuery =
+            whereConditions.Count > 0
+            ? "WHERE " + string.Join(" AND ", whereConditions)
+            : "WHERE 1=1";
+
+            foreach (Control ctrl in phDynamicFilters.Controls)
+            {
+                Panel panel = ctrl as Panel;
+                if (panel == null) continue;
+
+                CheckBox cb = null;
+                TextBox txt = null;
+
+                foreach (Control inner in panel.Controls)
+                {
+                    if (inner is CheckBox)
+                        cb = (CheckBox)inner;
+
+                    if (inner is Panel)
+                    {
+                        foreach (Control sub in ((Panel)inner).Controls)
+                        {
+                            if (sub is TextBox)
+                                txt = (TextBox)sub;
+                        }
+                    }
+                }
+
+                if (cb == null || txt == null)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(txt.Text))
+                    continue;
+
+                string colName =
+                    cb.ID.Replace("cb_", "");
+
+                displayQuery +=
+                    " AND " +
+                    colName +
+                    " LIKE '%" +
+                    txt.Text.Replace("'", "''") +
+                    "%'";
+            }
+
+
+            for (int i = 0; i < allowedDatasets.Count; i++)
+            {
+                displayQuery =
+                    displayQuery.Replace(
+                        "@dataset" + i,
+                        "'" + allowedDatasets[i] + "'");
+            }
+
+            for (int i = 0; i < keywords.Count; i++)
+            {
+                displayQuery =
+                    displayQuery.Replace(
+                        "@kw" + i,
+                        "'%" + keywords[i] + "%'");
+            }
+
+            litSqlQuery.Text =
+                "<div class='sql-query-bar'>" +
+                Server.HtmlEncode(displayQuery) +
+                "</div>";
+
             // ── Execute query ──────────────────────────────────
             List<Dictionary<string, string>> allRows =
                 new List<Dictionary<string, string>>();
-
-            
 
             try
             {
@@ -870,10 +935,6 @@ namespace ongc_webapp
             lblStatus.Text =
                 "Filtered rows = " +
                 filteredRows.Count;
-
-            lblStatus.Text =
-                " ";
-
             lblStatus.ForeColor =
                 System.Drawing.Color.FromArgb(0x18, 0x80, 0x38);
         }
