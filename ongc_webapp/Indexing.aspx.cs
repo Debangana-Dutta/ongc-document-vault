@@ -55,6 +55,13 @@ namespace ongc_webapp
 
             BindDatasetFilter();
 
+            if (Session["SelectedDataset"] == null &&
+                rblDatasets.Items.Count > 0)
+            {
+                Session["SelectedDataset"] =
+                    rblDatasets.Items[0].Value;
+            }
+
             RestoreDynamicFilters();
         }
 
@@ -64,13 +71,14 @@ namespace ongc_webapp
 
         private string GetSelectedDataset()
         {
-            if (string.IsNullOrEmpty(rblDatasets.SelectedValue))
-                return "";
+            if (Session["SelectedDataset"] != null)
+                return Session["SelectedDataset"].ToString();
 
-            return rblDatasets.SelectedValue;
+            if (!string.IsNullOrEmpty(rblDatasets.SelectedValue))
+                return rblDatasets.SelectedValue;
+
+            return "";
         }
-
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserID"] == null)
@@ -96,11 +104,21 @@ namespace ongc_webapp
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
+            Session["SelectedDataset"] =
+                GetSelectedDataset();
+
+            CurrentPage = 1;
+
             BindDynamicVaultData();
         }
 
         protected void btnApplyFilters_Click(object sender, EventArgs e)
         {
+            Session["SelectedDataset"] =
+                GetSelectedDataset();
+
+            CurrentPage = 1;
+
             BindDynamicVaultData();
         }
 
@@ -153,7 +171,7 @@ namespace ongc_webapp
                     conn.Open();
 
                     string query =
-                      @"SELECT metadata_name
+                      @"SELECT TRIM(metadata_name)
                       FROM user_metadata_access
                       WHERE userid = @userid
                       AND dataset_name = @dataset";
@@ -182,8 +200,9 @@ namespace ongc_webapp
                             while (reader.Read())
                             {
                                 cols.Add(
-                                    reader["metadata_name"]
-                                        .ToString());
+                                    reader[0]
+                                        .ToString()
+                                        .Trim());
                             }
                         }
                     }
@@ -214,7 +233,11 @@ namespace ongc_webapp
         // ════════════════════════════════════════════════════════
         private void RestoreDynamicFilters()
         {
-            
+            lblStatus.Text =
+            "Dataset = [" +
+            GetSelectedDataset() +
+            "]";
+
             // ── Determine which columns this user may see ──────
             HashSet<string> allowedCols =
             GetAllowedMetadataColumns();
@@ -226,67 +249,9 @@ namespace ongc_webapp
 
             // ── Collect all known metadata keys from the DB ────
             // We query only up to 500 rows to discover column names.
-            HashSet<string> allKeys = new HashSet<string>();
+            HashSet<string> visibleKeys =
+            GetAllowedMetadataColumns();
 
-            try
-            {
-                using (NpgsqlConnection conn =
-                    new NpgsqlConnection(connString))
-                {
-                    conn.Open();
-
-                    // Use Postgres's jsonb_object_keys for efficiency
-                    string selectedDataset = GetSelectedDataset();
-
-                    string query =
-                        "SELECT DISTINCT jsonb_object_keys(dynamic_metadata) " +
-                        "FROM indexed_documents " +
-                        "WHERE dynamic_metadata IS NOT NULL " +
-                        "AND dataset_name = @dataset " +
-                        "ORDER BY 1";
-
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue(
-                            "dataset",
-                            selectedDataset);
-
-                        using (NpgsqlDataReader reader =
-                            cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                                allKeys.Add(reader.GetString(0));
-                        }
-                    }
-                    
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    "RestoreDynamicFilters Error: " + ex.Message);
-            }
-
-            // ── Filter keys against the user's policy ──────────
-            HashSet<string> visibleKeys;
-
-            if (allowedCols == null)
-            {
-                visibleKeys =
-                    new HashSet<string>(
-                        allKeys,
-                        StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                visibleKeys =
-                    new HashSet<string>(
-                        allKeys.Where(k =>
-                            allowedCols.Contains(k)),
-                        StringComparer.OrdinalIgnoreCase);
-            }
-
-            // ── Build the sidebar controls ─────────────────────
             GenerateDynamicFilters(visibleKeys);
         }
 
@@ -315,126 +280,79 @@ namespace ongc_webapp
                 return;
             }
 
+            int debugIndex = 0;
+
             foreach (string column in availableColumns.OrderBy(c => c))
             {
-                Panel panel = new Panel();
-                panel.CssClass = "filter-row";
+                System.Diagnostics.Debug.WriteLine(
+                    debugIndex + " => " + column);
 
-                // ── Checkbox ──
-                CheckBox cb = new CheckBox();
-                cb.ID = "cb_" + column;
-                bool isChecked = Request.Form[cb.UniqueID] == "on";
-                cb.Checked = isChecked;
+                debugIndex++;
+                {
+                    Panel panel = new Panel();
+                    panel.CssClass = "filter-row";
 
-                // ── Label literal ──
-                Literal lbl = new Literal();
-                lbl.Text =
-                    "<span class='filter-column-name'>" +
-                    System.Web.HttpUtility.HtmlEncode(column) +
-                    "</span>";
+                    // ── Checkbox ──
+                    CheckBox cb = new CheckBox();
+                    cb.ID = "cb_" + column;
+                    string cbValue = Request.Form.AllKeys
+                     .Where(k => k != null &&
+                            k.EndsWith("$" + cb.ID))
+                     .Select(k => Request.Form[k])
+                     .FirstOrDefault();
 
-                // ── Textbox panel ──
-                Panel textboxPanel = new Panel();
-                string panelId = "box_" + column.Replace(" ", "_");
-                textboxPanel.Attributes["id"] = panelId;
-                textboxPanel.CssClass = "filter-input-box";
-                textboxPanel.Style["display"] = "block";
+                    cb.Checked = cbValue == "on";
 
-                TextBox txt = new TextBox();
-                txt.ID = "txt_" + column;
-                txt.CssClass = "form-control";
-                txt.Attributes["placeholder"] = "Filter value…";
+                    // ── Label literal ──
+                    Literal lbl = new Literal();
+                    lbl.Text =
+                        "<span class='filter-column-name'>" +
+                        System.Web.HttpUtility.HtmlEncode(column) +
+                        "</span>";
 
-                // Restore textbox value from posted form data
-                string postedValue = Request.Form[txt.UniqueID];
-                if (!string.IsNullOrWhiteSpace(postedValue))
-                    txt.Text = postedValue;
+                    // ── Textbox panel ──
+                    Panel textboxPanel = new Panel();
+                    string panelId = "box_" + column.Replace(" ", "_");
+                    textboxPanel.Attributes["id"] = panelId;
+                    textboxPanel.CssClass = "filter-input-box";
+                    textboxPanel.Style["display"] = "block";
 
-                textboxPanel.Controls.Add(txt);
+                    TextBox txt = new TextBox();
+                    txt.ID = "txt_" + column;
+                    txt.CssClass = "form-control";
+                    txt.Attributes["placeholder"] = "Filter value…";
 
-                panel.Controls.Add(cb);
-                panel.Controls.Add(lbl);
-                panel.Controls.Add(textboxPanel);
+                    // Restore textbox value from posted form data
+                    string postedValue = Request.Form.AllKeys
+                    .Where(k => k != null &&
+                           k.EndsWith("$" + txt.ID))
+                    .Select(k => Request.Form[k])
+                    .FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(postedValue))
+                        txt.Text = postedValue;
 
-                phDynamicFilters.Controls.Add(panel);
+                    textboxPanel.Controls.Add(txt);
 
-                // Also populate the Column Visibility checkboxlist
-                if (cblColumns.Items.FindByValue(column) == null)
-                    cblColumns.Items.Add(new ListItem(column, column));
+                    panel.Controls.Add(cb);
+                    panel.Controls.Add(lbl);
+                    panel.Controls.Add(textboxPanel);
+
+                    phDynamicFilters.Controls.Add(panel);
+
+                    // Also populate the Column Visibility checkboxlist
+                    if (cblColumns.Items.FindByValue(column) == null)
+                        cblColumns.Items.Add(new ListItem(column, column));
+                }
             }
         }
 
-        // ════════════════════════════════════════════════════════
-        //  GET FILTERED METADATA COLUMNS
-        //
-        //  Returns the set of metadata keys that are actually
-        //  present in the data rows AND (if the user selected
-        //  specific columns via cblColumns) are in that selection.
-        // ════════════════════════════════════════════════════════
-        private HashSet<string> GetFilteredMetadataColumns(
-            List<Dictionary<string, string>> allRows)
-        {
-            HashSet<string> columns =
-            new HashSet<string>();
-
-            HashSet<string> allowedColumns =
-                GetAllowedMetadataColumns();
-
-            HashSet<string> selectedColumns =
-                new HashSet<string>();
-
-            bool anySelected = false;
-
-            foreach (ListItem item in cblColumns.Items)
-            {
-                if (item.Selected)
-                {
-                    anySelected = true;
-                    selectedColumns.Add(item.Value);
-                }
-            }
-
-            foreach (var row in allRows)
-            {
-                foreach (var kv in row)
-                {
-                    string key = kv.Key;
-                    string value = kv.Value ?? "";
-
-                    // Skip the fixed display columns
-                    if (key.Equals("file_name", StringComparison.OrdinalIgnoreCase) ||
-                        key.Equals("view", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    if (string.IsNullOrWhiteSpace(value) || value == "NULL")
-                        continue;
-
-                    if (allowedColumns != null &&
-                        !allowedColumns.Contains(key))
-                        continue;
-
-                    if (anySelected &&
-                        !selectedColumns.Contains(key))
-                        continue;
-
-                    columns.Add(key);
-                }
-            }
-
-            return columns;
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  BIND DYNAMIC VAULT DATA  (core search + security)
-        //
-        //  Security enforcement happens in TWO places:
-        //    A) SQL WHERE clause: restricts source_excel_file to
-        //       only datasets in the user's user_dataset_access rows.
-        //    B) Sidebar generation (RestoreDynamicFilters): only
-        //       columns in user_metadata_policy are rendered.
-        // ════════════════════════════════════════════════════════
+        
         private void BindDynamicVaultData()
         {
+
+            lblStatus.Text =
+            "DATASET = " +
+            GetSelectedDataset();
             int totalResults = 0;
 
 
@@ -682,9 +600,12 @@ namespace ongc_webapp
                                             metadataJson);
 
                                     foreach (var item in metadata)
-                                        rowMap[item.Key] = item.Value != null
-                                            ? item.Value.ToString()
-                                            : "NULL";
+                                    {
+                                        rowMap[item.Key.Trim()] =
+                                            item.Value != null
+                                                ? item.Value.ToString()
+                                                : "NULL";
+                                    }
                                 }
 
                                 allRows.Add(rowMap);
@@ -733,23 +654,27 @@ namespace ongc_webapp
 
             // ── Determine visible columns ──────────────────────
             HashSet<string> filteredColumns =
-                GetFilteredMetadataColumns(allRows);
+                GetAllowedMetadataColumns();
+
+            if (filteredColumns == null)
+            {
+                filteredColumns = new HashSet<string>();
+
+                foreach (var row in allRows)
+                {
+                    foreach (var key in row.Keys)
+                    {
+                        if (key != "file_name" &&
+                            key != "view")
+                        {
+                            filteredColumns.Add(key);
+                        }
+                    }
+                }
+            }
 
             // ── Show/hide sidebar filter rows ──────────────────
-            foreach (Control ctrl in phDynamicFilters.Controls)
-            {
-                Panel panel = ctrl as Panel;
-                if (panel == null) continue;
-
-                CheckBox cb = null;
-                foreach (Control inner in panel.Controls)
-                    if (inner is CheckBox) { cb = (CheckBox)inner; break; }
-
-                if (cb == null) continue;
-
-                string colName = cb.ID.Replace("cb_", "");
-                panel.Visible = filteredColumns.Contains(colName);
-            }
+            
 
             // ── Apply metadata text filters ────────────────────
             List<Dictionary<string, string>> filteredRows =
@@ -785,9 +710,22 @@ namespace ongc_webapp
                         continue;
 
                     string colName = cb.ID.Replace("cb_", "");
-                    string actualValue = rowMap.ContainsKey(colName)
-                        ? (rowMap[colName] ?? "").Trim()
-                        : "";
+
+                    System.Diagnostics.Debug.WriteLine("FILTER COLUMN = [" + colName + "] VALUE = [" + txt.Text + "]");
+
+                    string actualValue = "";
+
+                    var actualKey =
+                        rowMap.Keys.FirstOrDefault(
+                            k => k.Equals(
+                                colName,
+                                StringComparison.OrdinalIgnoreCase));
+
+                    if (actualKey != null)
+                    {
+                        actualValue =
+                            (rowMap[actualKey] ?? "").Trim();
+                    }
 
                     string actualLower = actualValue.ToLower();
                     string filterValue = (txt.Text ?? "").Trim().ToLower();
@@ -970,6 +908,14 @@ namespace ongc_webapp
             List<string> datasets =
                 GetAllowedDatasets();
 
+            string selected = "";
+
+            if (Session["SelectedDataset"] != null)
+            {
+                selected =
+                    Session["SelectedDataset"].ToString();
+            }
+
             rblDatasets.Items.Clear();
 
             foreach (string dataset in datasets)
@@ -978,10 +924,24 @@ namespace ongc_webapp
                     new ListItem(dataset, dataset));
             }
 
+            if (!string.IsNullOrEmpty(selected))
+            {
+                ListItem item =
+                    rblDatasets.Items.FindByValue(selected);
+
+                if (item != null)
+                {
+                    item.Selected = true;
+                }
+            }
+
             if (rblDatasets.Items.Count > 0 &&
                 string.IsNullOrEmpty(rblDatasets.SelectedValue))
             {
                 rblDatasets.SelectedIndex = 0;
+
+                Session["SelectedDataset"] =
+                    rblDatasets.SelectedValue;
             }
         }
 
@@ -989,6 +949,9 @@ namespace ongc_webapp
                         object sender,
                         EventArgs e)
         {
+
+            Session["SelectedDataset"] = rblDatasets.SelectedValue;
+
             CurrentPage = 1;
 
             RestoreDynamicFilters();
