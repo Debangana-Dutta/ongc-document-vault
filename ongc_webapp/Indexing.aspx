@@ -835,25 +835,43 @@ window.onload = function () {
 
                 <div class="custom-pager">
 
-                    <asp:Button
-                        ID="btnPrevPage"
-                        runat="server"
-                        Text="Previous"
-                        CssClass="btn-page"
-                        OnClick="btnPrevPage_Click" />
+                    <div class="custom-pager">
 
-                    <asp:Label
-                        ID="lblPageInfo"
-                        runat="server"
-                        Text="Page 1 of 1"
-                        CssClass="page-info" />
+                        <asp:Button
+                            ID="btnFirstPage"
+                            runat="server"
+                            Text="<< First"
+                            CssClass="btn-page"
+                            OnClick="btnFirstPage_Click" />
 
-                    <asp:Button
-                        ID="btnNextPage"
-                        runat="server"
-                        Text="Next"
-                        CssClass="btn-page"
-                        OnClick="btnNextPage_Click" />
+                        <asp:Button
+                            ID="btnPrevPage"
+                            runat="server"
+                            Text="Previous"
+                            CssClass="btn-page"
+                            OnClick="btnPrevPage_Click" />
+
+                        <asp:Label
+                            ID="lblPageInfo"
+                            runat="server"
+                            Text="Page 1 of 1"
+                            CssClass="page-info" />
+
+                        <asp:Button
+                            ID="btnNextPage"
+                            runat="server"
+                            Text="Next"
+                            CssClass="btn-page"
+                            OnClick="btnNextPage_Click" />
+
+                        <asp:Button
+                            ID="btnLastPage"
+                            runat="server"
+                            Text="Last >>"
+                            CssClass="btn-page"
+                            OnClick="btnLastPage_Click" />
+
+                    </div>
 
                 </div>
 

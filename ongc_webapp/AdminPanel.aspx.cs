@@ -44,14 +44,14 @@ namespace ongc_webapp
         protected void btnSavePassword_Click(
                     object sender,
                     EventArgs e)
-                {
-                    try
-                    {
-                    string username =
-                    hfResetUsername.Value;
+        {
+            try
+            {
+                string username =
+                hfResetUsername.Value;
 
-                    string newPassword =
-                    txtNewPassword.Text.Trim();
+                string newPassword =
+                txtNewPassword.Text.Trim();
 
                 if (string.IsNullOrWhiteSpace(newPassword))
                 {
@@ -153,7 +153,7 @@ namespace ongc_webapp
             }
         }
 
-            
+
 
 
         protected void gvUserAccess_RowCommand(
@@ -220,7 +220,7 @@ namespace ongc_webapp
             }
         }
 
-        
+
 
         // ════════════════════════════════════════════════════════
         //  1. USER MANAGEMENT
@@ -230,15 +230,15 @@ namespace ongc_webapp
         //  2. POLICY PANEL — populate dropdowns & checkboxlists
         // ════════════════════════════════════════════════════════
 
-       
+
 
         // Populates datasets from distinct source_excel_file values
         // DB table: indexed_documents
-        
+
 
         // Populates metadata column names by inspecting JSONB keys
         // DB table: indexed_documents → dynamic_metadata
-        
+
 
         // ════════════════════════════════════════════════════════
         //  3. LOAD EXISTING POLICY (admin selects a user)
@@ -432,7 +432,7 @@ namespace ongc_webapp
                         successCount++;
                     }
                 }
-                
+
                 ShowFeedback(lblStatusFeedback,
                     successCount + " file(s) ingested successfully.", true);
             }
@@ -475,6 +475,7 @@ namespace ongc_webapp
             pnlUserManagement.Visible = false;
             pnlUpload.Visible = false;
             pnlActivity.Visible = false;
+            pnlDatasets.Visible = false;
 
             ResetTabStyles();
 
@@ -506,6 +507,17 @@ namespace ongc_webapp
                         "sidebar-btn active";
 
                     break;
+
+                case "datasets":
+
+                    pnlDatasets.Visible = true;
+
+                    btnTabDatasets.CssClass =
+                        "sidebar-btn active";
+
+                    BuildDatasetTree();
+
+                    break;
             }
 
             ViewState["AdminTab"] = tab;
@@ -518,6 +530,7 @@ namespace ongc_webapp
             btnTabUsers.CssClass = "sidebar-btn";
             btnTabUpload.CssClass = "sidebar-btn";
             btnTabActivity.CssClass = "sidebar-btn";
+            btnTabDatasets.CssClass = "sidebar-btn";
         }
 
         protected void btnTabUsers_Click(
@@ -541,6 +554,95 @@ namespace ongc_webapp
             ShowTab("activity");
         }
 
+        protected void btnTabDatasets_Click(
+                        object sender,
+                        EventArgs e)
+        {
+            ShowTab("datasets");
+        }
+
+        private void BuildDatasetTree()
+        {
+            phDatasets.Controls.Add(
+            new LiteralControl(
+                "<div style='color:red'>TEST</div>"));
+            phDatasets.Controls.Clear();
+
+            using (NpgsqlConnection conn =
+                new NpgsqlConnection(connString))
+            {
+                conn.Open();
+
+                string query =
+                @"
+        SELECT
+            dataset_name,
+            source_excel_file,
+            COUNT(*) AS file_count
+        FROM indexed_documents
+        GROUP BY
+            dataset_name,
+            source_excel_file
+        ORDER BY
+            dataset_name,
+            source_excel_file";
+
+                using (NpgsqlCommand cmd =
+                    new NpgsqlCommand(query, conn))
+                using (NpgsqlDataReader dr =
+                    cmd.ExecuteReader())
+                {
+                    string currentDataset = "";
+
+                    while (dr.Read())
+                    {
+                        string dataset =
+                            dr["dataset_name"].ToString();
+
+                        string excel =
+                            dr["source_excel_file"].ToString();
+
+                        string count =
+                            dr["file_count"].ToString();
+
+                        if (dataset != currentDataset)
+                        {
+                            if (!string.IsNullOrEmpty(currentDataset))
+                            {
+                                phDatasets.Controls.Add(
+                                    new LiteralControl(
+                                        "</ul></details>"));
+                            }
+
+                            phDatasets.Controls.Add(
+                                new LiteralControl(
+                                    "<details style='margin-bottom:10px;'>" +
+                                    "<summary style='font-weight:bold;cursor:pointer;'>" +
+                                    dataset +
+                                    "</summary><ul>"));
+
+                            currentDataset = dataset;
+                        }
+
+                        phDatasets.Controls.Add(
+                            new LiteralControl(
+                                "<li>" +
+                                excel +
+                                " (" +
+                                count +
+                                " documents)" +
+                                "</li>"));
+                    }
+
+                    if (!string.IsNullOrEmpty(currentDataset))
+                    {
+                        phDatasets.Controls.Add(
+                            new LiteralControl(
+                                "</ul></details>"));
+                    }
+                }
+            }
+        }
 
     }
 }

@@ -114,6 +114,15 @@ namespace ongc_webapp
         protected global::System.Web.UI.WebControls.GridView gvDocuments;
 
         /// <summary>
+        /// btnFirstPage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnFirstPage;
+
+        /// <summary>
         /// btnPrevPage control.
         /// </summary>
         /// <remarks>
@@ -139,5 +148,14 @@ namespace ongc_webapp
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnNextPage;
+
+        /// <summary>
+        /// btnLastPage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnLastPage;
     }
 }

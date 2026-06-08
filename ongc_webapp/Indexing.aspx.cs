@@ -829,12 +829,25 @@ namespace ongc_webapp
             if (totalPages == 0)
                 totalPages = 1;
 
+            TotalPages = totalPages;
+
             if (CurrentPage > totalPages)
                 CurrentPage = totalPages;
 
             lblPageInfo.Text =
                 "Page " + CurrentPage +
                 " of " + totalPages;
+
+            btnFirstPage.Enabled = CurrentPage > 1;
+
+            btnPrevPage.Enabled =
+                CurrentPage > 1;
+
+            btnNextPage.Enabled =
+                CurrentPage < totalPages;
+
+            btnLastPage.Enabled =
+                CurrentPage < totalPages;
 
             DataTable pageTable;
 
@@ -985,6 +998,20 @@ namespace ongc_webapp
             }
         }
 
+        private int TotalPages
+        {
+            get
+            {
+                return ViewState["TotalPages"] == null
+                    ? 1
+                    : Convert.ToInt32(ViewState["TotalPages"]);
+            }
+            set
+            {
+                ViewState["TotalPages"] = value;
+            }
+        }
+
         protected void btnPrevPage_Click(
         object sender,
         EventArgs e)
@@ -995,11 +1022,30 @@ namespace ongc_webapp
             BindDynamicVaultData();
         }
 
-        protected void btnNextPage_Click(
-            object sender,
-            EventArgs e)
+        protected void btnFirstPage_Click(
+                    object sender,
+                    EventArgs e)
         {
-            CurrentPage++;
+            CurrentPage = 1;
+
+            BindDynamicVaultData();
+        }
+
+        protected void btnNextPage_Click(
+                        object sender,
+                        EventArgs e)
+        {
+            if (CurrentPage < TotalPages)
+                CurrentPage++;
+
+            BindDynamicVaultData();
+        }
+
+        protected void btnLastPage_Click(
+                        object sender,
+                        EventArgs e)
+        {
+            CurrentPage = TotalPages;
 
             BindDynamicVaultData();
         }
@@ -1029,8 +1075,14 @@ namespace ongc_webapp
                 for (int i = 0; i < e.Row.Cells.Count; i++)
                 {
                     // Decode HTML entities so <a> tags render correctly
-                    e.Row.Cells[i].Text =
-                        Server.HtmlDecode(e.Row.Cells[i].Text);
+                    string text =
+                            Server.HtmlDecode(
+                                e.Row.Cells[i].Text);
+
+                    e.Row.Cells[i].Controls.Clear();
+
+                    e.Row.Cells[i].Controls.Add(
+                        new LiteralControl(text));
                 }
             }
         }

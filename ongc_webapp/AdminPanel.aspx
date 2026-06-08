@@ -317,6 +317,13 @@
                 CssClass="sidebar-btn"
                 OnClick="btnTabActivity_Click" />
 
+            <asp:Button
+                ID="btnTabDatasets"
+                runat="server"
+                Text="Datasets"
+                CssClass="sidebar-btn"
+                OnClick="btnTabDatasets_Click" />
+
         </div>
 
         <div class="admin-content">
@@ -500,23 +507,40 @@
     </div>
 
         </asp:Panel>
+        <asp:Panel
+            ID="pnlActivity"
+            runat="server"
+            Visible="false">
+
+            <div class="admin-card">
+
+                <h4>User Activity Log</h4>
+
+                <p>
+                    Activity logs will appear here.
+                </p>
+
+            </div>
+
+        </asp:Panel>
 
         <asp:Panel
-        ID="pnlActivity"
-        runat="server"
-        Visible="false">
+            ID="pnlDatasets"
+            runat="server"
+            Visible="false">
 
-        <div class="admin-card">
+            <div class="admin-card">
 
-            <h4>User Activity Log</h4>
+                <h4>Datasets</h4>
 
-            <p>
-                Activity logs will appear here.
-            </p>
+                <asp:PlaceHolder
+                    ID="phDatasets"
+                    runat="server">
+                </asp:PlaceHolder>
 
-        </div>
+            </div>
 
-    </asp:Panel>
+        </asp:Panel>
 
     <asp:Panel
     ID="pnlPasswordReset"
@@ -568,6 +592,6 @@
         OnClick="btnCancelPassword_Click" />
 
 </asp:Panel>
-</div> </div> 
+</div> 
 
 </asp:Content>
