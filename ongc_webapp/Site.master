@@ -1,0 +1,142 @@
+<%@ Master Language="C#" AutoEventWireup="true" %><script runat="server">
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        Response.Cache.SetCacheability(
+        System.Web.HttpCacheability.NoCache);
+
+        Response.Cache.SetNoStore();
+
+        Response.Cache.SetExpires(
+        DateTime.UtcNow.AddDays(-1));
+        if (Session["Role"] == null ||
+            Session["Role"].ToString().ToUpper() != "ADMIN")
+        {
+            phAdminLink.Visible = false;
+        }
+    }
+    
+    protected void lnkLogOut_Click(object sender, EventArgs e)
+    {
+    Session.Abandon();
+    Session.Clear();
+
+    if (Request.Cookies["ASP.NET_SessionId"] != null)
+    {
+        Response.Cookies["ASP.NET_SessionId"].Value = string.Empty;
+        Response.Cookies["ASP.NET_SessionId"].Expires =
+            DateTime.Now.AddMonths(-20);
+    }
+
+    Response.Cache.SetCacheability(
+        System.Web.HttpCacheability.NoCache);
+
+    Response.Cache.SetNoStore();
+
+    Response.Cache.SetExpires(
+        DateTime.UtcNow.AddDays(-1));
+
+    Response.Cache.SetRevalidation(
+        System.Web.HttpCacheRevalidation.AllCaches);
+
+    Response.Redirect("Login.aspx", true);
+    }
+    </script><!DOCTYPE html><html lang="en"><head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%: Page.Title %> - ONGC Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <style>
+        * { font-family: 'Public Sans', sans-serif; box-sizing: border-box; }
+        body { background-color: #ffffff; }
+        .ongc-foundation-header { background-color: #ffffff; padding: 15px 0; border-bottom: 1px solid #f5f5f5; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
+        .header-flex-container { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+        .brand-logo-frame img { height: 70px; width: auto; display: block; }
+        .foundation-nav-list { display: flex; align-items: center; list-style: none; gap: 32px; margin: 0; padding: 0; }
+        .foundation-nav-item a, .logout-btn-link { text-decoration: none; color: #7a0616; font-size: 1.05rem; font-weight: 500; padding: 8px 4px; background: none; border: none; cursor: pointer; display: inline-block; }
+        .foundation-nav-item a:hover, .logout-btn-link:hover { color: #b00c24; font-weight: 600; }
+        .main-portal-body { min-height: 75vh; padding-top: 10px; }
+
+        /* Refined Global Footer */
+        .footer-base { background-color: #f8f9fa; border-top: 2px solid #7a0616; padding: 50px 0 30px 0; margin-top: 60px; color: #4a4a4a; }
+        .footer-heading { color: #2d3436; font-weight: 700; margin-bottom: 15px; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
+        .footer-link { text-decoration: none; color: #4a4a4a; }
+        .footer-link:hover { color: #7a0616; }
+        .divider-col { border-right: 1px solid #dee2e6; }
+        
+        /* Centered Status Indicators */
+        .status-container { display: flex; align-items: center; gap: 8px; }
+        .status-dot { 
+            height: 10px; width: 10px; background-color: #28a745; 
+            border-radius: 50%; display: inline-block; 
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(40, 167, 69, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+    </style></head><body>
+    <form runat="server">
+        <header class="ongc-foundation-header">
+            <div class="header-flex-container">
+                <a href="Dashboard.aspx" class="brand-logo-frame"><img src="images/ongclogo.png" alt="ONGC Logo" /></a>
+                <nav class="d-flex align-items-center">
+                    <ul class="foundation-nav-list">
+                        <li class="foundation-nav-item"><a href="Dashboard.aspx">Home</a></li>
+                        <li class="foundation-nav-item"><a href="About.aspx">About Us</a></li>
+                        <li class="foundation-nav-item"><a href="Indexing.aspx">Document Search</a></li>
+                       <asp:PlaceHolder ID="phAdminLink" runat="server">
+                            <li class="foundation-nav-item">
+                                <a href="AdminPanel.aspx">Admin Panel</a>
+                            </li>
+                        </asp:PlaceHolder>
+                        <li class="foundation-nav-item"><asp:LinkButton ID="lnkLogOut" runat="server" OnClick="lnkLogOut_Click" CssClass="logout-btn-link" style="font-weight: 700; color: #b00c24;">Log Out</asp:LinkButton></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-portal-body"><asp:ContentPlaceHolder ID="MainContent" runat="server" /></main>
+
+        <footer class="footer-base">
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <div class="col-md-4 divider-col">
+                        <div class="footer-heading">SYSTEM</div>
+                        <ul style="list-style: none; padding: 0; font-size: 0.9rem; line-height: 2.2;">
+                            <li class="status-container"><i class="fas fa-sync-alt text-secondary"></i> Searching: <span class="status-dot"></span> Online</li>
+                            <li class="status-container"><i class="fas fa-database text-secondary"></i> Database: <span class="status-dot"></span> Connected</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4 divider-col">
+                        <div class="footer-heading">Need Help?</div>
+                        <ul style="list-style: none; padding: 0; font-size: 0.9rem; line-height: 2.2;">
+                            <li><a href="docs/ONGC_Indexing_Manual.pdf" target="_blank" class="footer-link"><i class="fas fa-file-pdf text-secondary me-2"></i> User Manual PDF</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="footer-heading">Enterprise Info</div>
+                        <ul style="list-style: none; padding: 0; font-size: 0.9rem; line-height: 2.2;">
+                            <li><i class="fas fa-map-marker-alt text-secondary me-2"></i> ONGC Assam Asset, Jorhat</li>
+                            <li><i class="fas fa-id-card text-secondary me-2"></i> CIN: L74899DL1993GOI054155</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="border-top: 1px solid #dee2e6; margin-top: 30px; padding-top: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="font-size: 1.4rem; display: flex; gap: 20px;">
+                        <a href="https://www.facebook.com/ONGCLimited/" target="_blank" style="color: #3b5998;"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/ongcofficial/" target="_blank" style="color: #e1306c;"><i class="fab fa-instagram"></i></a>
+                        <a href="https://x.com/ONGC_" target="_blank" style="color: #000000;"><i class="fab fa-x-twitter"></i></a>
+                        <a href="https://in.linkedin.com/company/oilandnaturalgascorporation" target="_blank" style="color: #0077b5;"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://www.youtube.com/c/ONGCLtd1/" target="_blank" style="color: #ff0000;"><i class="fab fa-youtube"></i></a>
+                    </div>
+                    <div style="color: #636e72; font-size: 0.85rem;">&copy; 2026 Oil and Natural Gas Corporation Limited. All Rights Reserved.</div>
+                </div>
+            </div>
+        </footer>
+    </form></body></html>
