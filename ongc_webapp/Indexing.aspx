@@ -801,20 +801,21 @@ document.addEventListener(
             });
     });
 
-    function copySqlQuery() {
+function copySqlQuery() {
 
-        var sql =
-            document.querySelector(".sql-query-bar");
+    var sql =
+        document.getElementById(
+            "fullSqlQuery");
 
-        if (!sql)
-            return;
+    if (!sql)
+        return;
 
-        navigator.clipboard.writeText(
-            sql.innerText
-        );
+    navigator.clipboard.writeText(
+        sql.value
+    );
 
-        alert("SQL query copied.");
-    }
+    alert("SQL query copied.");
+    } 
 
     </script>
 
@@ -840,15 +841,6 @@ document.addEventListener(
                      class="suggestion-box">
                 </div>
 
-            </div>
-
-            <div class="mode-wrap">
-                <asp:RadioButtonList ID="rblSearchMode"
-                    runat="server"
-                    RepeatDirection="Vertical">
-                    <asp:ListItem Text="UNION"        Value="OR"  Selected="True" />
-                    <asp:ListItem Text="INTERSECTION" Value="AND" />
-                </asp:RadioButtonList>
             </div>
 
             <asp:Button ID="btnSearch"

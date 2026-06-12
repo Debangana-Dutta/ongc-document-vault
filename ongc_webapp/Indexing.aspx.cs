@@ -533,7 +533,10 @@ namespace ongc_webapp
             litSqlQuery.Text =
                 "<div class='sql-query-bar'>" +
                 Server.HtmlEncode(shortQuery) +
-                "</div>";
+                "</div>" +
+                "<textarea id='fullSqlQuery' style='display:none;'>" +
+                Server.HtmlEncode(displayQuery) +
+                "</textarea>";
 
             // ── Execute query ──────────────────────────────────
             List<Dictionary<string, string>> allRows =

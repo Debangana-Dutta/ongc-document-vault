@@ -120,10 +120,15 @@ namespace ongc_webapp
 
             if (!IsPostBack)
             {
+                ShowPendingOnly = false;
+
+                UpdateUserFilterButtons();
+
                 BindUserAccessGrid();
 
                 ShowTab("users");
             }
+        
             else
             {
                 if (ViewState["AdminTab"] != null)
@@ -198,6 +203,26 @@ namespace ongc_webapp
                 BindUserAccessGrid();
 
                 return;
+            }
+        }
+
+        private void UpdateUserFilterButtons()
+        {
+            if (ShowPendingOnly)
+            {
+                btnShowPending.CssClass =
+                    "btn-ongc";
+
+                btnShowAllUsers.CssClass =
+                    "btn-ongc-outline";
+            }
+            else
+            {
+                btnShowAllUsers.CssClass =
+                    "btn-ongc";
+
+                btnShowPending.CssClass =
+                    "btn-ongc-outline";
             }
         }
 
@@ -391,18 +416,24 @@ namespace ongc_webapp
         }
 
         protected void btnShowAllUsers_Click(
-                        object sender,
-                        EventArgs e)
+                    object sender,
+                    EventArgs e)
         {
             ShowPendingOnly = false;
+
+            UpdateUserFilterButtons();
+
             BindUserAccessGrid();
         }
 
         protected void btnShowPending_Click(
-            object sender,
-            EventArgs e)
+                    object sender,
+                    EventArgs e)
         {
             ShowPendingOnly = true;
+
+            UpdateUserFilterButtons();
+
             BindUserAccessGrid();
         }
 
