@@ -276,7 +276,12 @@ namespace ongc_webapp
 
 
             // ── Keyword search setup ───────────────────────────
-            string rawSearch = txtSearch.Text.Trim();
+            string rawSearch =
+            System.Text.RegularExpressions.Regex.Replace(
+                txtSearch.Text,
+                @"[^\w\s]",
+                " "
+            ).Trim();
             List<string> keywords = rawSearch
                 .Split(new char[] { ' ' },
                     StringSplitOptions.RemoveEmptyEntries)
@@ -309,7 +314,7 @@ namespace ongc_webapp
                     new List<string>();
 
                 vectorParts.Add(
-                    "to_tsvector('simple', regexp_replace(COALESCE(file_name,''), '[_-]', ' ', 'g'))");
+                    "to_tsvector('simple', regexp_replace(\r\n    COALESCE(file_name,''),\r\n    '[_\\.-]',\r\n    ' ',\r\n    'g'\r\n))");
 
                 vectorParts.Add(
                     "to_tsvector('simple', COALESCE(extracted_text,''))");
@@ -548,7 +553,7 @@ namespace ongc_webapp
                         {
                             countCmd.Parameters.AddWithValue(
                                 "searchText",
-                                string.Join(" ", keywords));
+                                string.Join(" OR ", keywords));
                         }
 
                         for (int i = 0; i < allowedDatasets.Count; i++)
@@ -603,8 +608,8 @@ namespace ongc_webapp
                         if (keywords.Count > 0)
                         {
                             cmd.Parameters.AddWithValue(
-                                "searchText",
-                                string.Join(" ", keywords));
+                            "searchText",
+                            string.Join(" OR ", keywords));
                         }
 
                         // Bind dataset security parameters
@@ -840,7 +845,8 @@ namespace ongc_webapp
                                 string normalizedCell =
                                     cellValue
                                     .Replace("_", " ")
-                                    .Replace("-", " ");
+                                    .Replace("-", " ")
+                                    .Replace(".", " ");
 
                                 if (normalizedCell.IndexOf(
                                         keyword,

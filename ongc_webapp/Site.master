@@ -84,7 +84,7 @@
     <form runat="server">
         <header class="ongc-foundation-header">
             <div class="header-flex-container">
-                <a href="Dashboard.aspx" class="brand-logo-frame"><img src="images/ongclogo.png" alt="ONGC Logo" /></a>
+                <a href="Dashboard.aspx" class="brand-logo-frame"><img src="ongclogo.png" alt="ONGC Logo" /></a>
                 <nav class="d-flex align-items-center">
                     <ul class="foundation-nav-list">
                         <li class="foundation-nav-item"><a href="Dashboard.aspx">Home</a></li>
