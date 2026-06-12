@@ -1,4 +1,4 @@
-﻿﻿﻿<%@ Page Title="Login" Language="C#" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="ongc_webapp.Login" %>
+﻿1﻿﻿<%@ Page Title="Login" Language="C#" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="ongc_webapp.Login" %>
 <!DOCTYPE html>
 <html lang="en">
 <head runat="server">
@@ -37,9 +37,7 @@
             padding: 24px 16px;
         }
 
-        /* ════════════════════════════════════════
-           SHELL
-           ════════════════════════════════════════ */
+
         .login-shell {
             width: 100%;
             max-width: 1160px;
@@ -52,13 +50,11 @@
             align-self: flex-start;
         }
 
-        /* ════════════════════════════════════════
-           VISUAL PANEL
-           ════════════════════════════════════════ */
+
         .visual-panel {
             flex: 1.2;
             position: relative;
-            background: url('images/ongc_refinery.jpg') center 25% / cover no-repeat;
+            background: url('ongc_refinery.jpg') center 25% / cover no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -80,9 +76,7 @@
         }
         .visual-bottom p { font-size: 0.9rem; font-weight: 400; line-height: 1.6; }
 
-        /* ════════════════════════════════════════
-           FORM PANEL
-           ════════════════════════════════════════ */
+
         .form-panel {
             flex: 0 0 480px;
             display: flex;
@@ -153,9 +147,7 @@
         }
         .back-link:hover { color: var(--maroon); }
 
-        /* ════════════════════════════════════════
-           FIELD GROUPS
-           ════════════════════════════════════════ */
+
         .field-group { margin-bottom: 14px; }
 
         .field-group label {
@@ -321,7 +313,7 @@
 
 <div class="login-shell">
 
-    <!-- ═══════════════════ VISUAL SIDE ═══════════════════ -->
+
     <div class="visual-panel">
         <div class="visual-top">
         </div>
@@ -331,7 +323,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════ FORM SIDE ═══════════════════ -->
+
     <div class="form-panel">
 
         <!-- Role tabs: Employee / Admin -->
@@ -345,11 +337,7 @@
 
         <!-- Hidden state fields -->
         
-        
 
-        <!-- ═══════════════════════════════════════════════
-             EMPLOYEE SECTION
-             ═══════════════════════════════════════════════ -->
         <div id="emp-section">
 
             <button type="button" class="back-link" id="backBtn" onclick="switchEmployeeView('LOGIN')">
@@ -444,9 +432,7 @@
 <script>
 // @ts-nocheck
 
-/* ══════════════════════════════════════════════════════════
-   ROLE TAB  (Employee ↔ Admin)
-══════════════════════════════════════════════════════════ */
+
 function setRole(role) {
     var isAdmin = (role === 'ADMIN');
     document.getElementById('emp-section').style.display = isAdmin ? 'none' : 'block';
@@ -457,9 +443,7 @@ function setRole(role) {
     hideAlert();
 }
 
-/* ══════════════════════════════════════════════════════════
-   EMPLOYEE VIEW  (Login / Register / Recovery)
-══════════════════════════════════════════════════════════ */
+
 function switchEmployeeView(mode) {
     show('hdr-login', mode === 'LOGIN');
     show('hdr-register', mode === 'REGISTER');
@@ -489,9 +473,7 @@ function switchEmployeeView(mode) {
     hideAlert();
 }
 
-/* ══════════════════════════════════════════════════════════
-   EMPLOYEE REGISTER: Account type (Employee / Admin)
-══════════════════════════════════════════════════════════ */
+
 function setRegAcctType(type) {
     var regAccountType = type;
     var isAdmin = (type === 'ADMIN');
@@ -501,9 +483,7 @@ function setRegAcctType(type) {
     show('emp-desig-group', isAdmin);
 }
 
-/* ══════════════════════════════════════════════════════════
-   ADMIN VIEW  (Login / Register / Recovery)
-══════════════════════════════════════════════════════════ */
+
 function switchAdminView(mode) {
     // Headers
     show('adm-hdr-login',    mode === 'LOGIN');
@@ -552,9 +532,7 @@ function switchAdminView(mode) {
     hideAlert();
 }
 
-/* ══════════════════════════════════════════════════════════
-   PASSWORD EYE TOGGLE
-══════════════════════════════════════════════════════════ */
+
 function togglePwd(inputId, btnId) {
     var input = document.getElementById(inputId);
     var btn = document.getElementById(btnId);
@@ -564,9 +542,7 @@ function togglePwd(inputId, btnId) {
     btn.querySelector('i').className = showing ? 'bi bi-eye' : 'bi bi-eye-slash';
 }
 
-/* ══════════════════════════════════════════════════════════
-   ALERT HELPERS
-══════════════════════════════════════════════════════════ */
+
 function showAlert(msg, type) {
     var box = document.getElementById('alertBox');
     document.getElementById('alertMsg').textContent = msg;

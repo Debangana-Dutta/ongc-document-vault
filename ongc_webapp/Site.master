@@ -116,7 +116,9 @@
                     <div class="col-md-4 divider-col">
                         <div class="footer-heading">Need Help?</div>
                         <ul style="list-style: none; padding: 0; font-size: 0.9rem; line-height: 2.2;">
-                            <li><a href="docs/ONGC_Indexing_Manual.pdf" target="_blank" class="footer-link"><i class="fas fa-file-pdf text-secondary me-2"></i> User Manual PDF</a></li>
+                            <li><a href="ongc_user_manual.pdf"
+                           target="_blank"
+                           class="footer-link"><i class="fas fa-file-pdf text-secondary me-2"></i> User Manual PDF</a></li>
                         </ul>
                     </div>
                     <div class="col-md-4">

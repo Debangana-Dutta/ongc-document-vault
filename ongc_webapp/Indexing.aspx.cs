@@ -1,23 +1,4 @@
-﻿// ============================================================
-//  Indexing.aspx.cs
-//  ONGC Document Portal – Search Page Code-Behind
-//
-//  Security model implemented:
-//    1. RestoreDynamicFilters()  – OnInit – reads user's metadata
-//       policy from user_metadata_policy and only renders allowed
-//       columns in the sidebar PlaceHolder (phDynamicFilters).
-//
-//    2. BindDynamicVaultData()   – builds the SQL query with a
-//       JOIN / IN clause against user_dataset_access so results
-//       are restricted to datasets the user is permitted to see.
-//
-//  DB tables consumed (read-only):
-//    • indexed_documents     – document rows + dynamic_metadata JSONB
-//    • user_dataset_access   – per-user allowed source_excel_file values
-//    • user_metadata_policy  – per-user allowed sidebar column names (JSONB array)
-// ============================================================
-
-using DocumentFormat.OpenXml.Office.Word;
+﻿using DocumentFormat.OpenXml.Office.Word;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Npgsql;
@@ -42,12 +23,6 @@ namespace ongc_webapp
 
         // Column to scroll-highlight in the results table
         private string focusedColumn = "";
-
-        // ════════════════════════════════════════════════════════
-        //  ONINIT – runs before ViewState is restored.
-        //  We must rebuild the dynamic sidebar controls here so
-        //  that ASP.NET can match posted form values to them.
-        // ════════════════════════════════════════════════════════
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
@@ -67,9 +42,6 @@ namespace ongc_webapp
             RestoreDynamicFilters();
         }
 
-        // ════════════════════════════════════════════════════════
-        //  PAGE LOAD
-        // ════════════════════════════════════════════════════════
 
         private string GetSelectedDataset()
         {
@@ -100,9 +72,6 @@ namespace ongc_webapp
             }
         }
 
-        // ════════════════════════════════════════════════════════
-        //  EVENT HANDLERS
-        // ════════════════════════════════════════════════════════
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
@@ -129,34 +98,6 @@ namespace ongc_webapp
             BindDynamicVaultData();
         }
 
-        
-
-        // ════════════════════════════════════════════════════════
-        //  SECURITY HELPERS
-        // ════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Returns the CPF of the currently logged-in user.
-        /// Session["CPF"] is set at login; falls back to Session["UserID"]
-        /// if your login code stores the CPF there instead.
-        /// Adjust the key to match your Login.aspx.cs code.
-        /// </summary>
-
-        /// <summary>
-        /// Loads the list of datasets (source_excel_file values) the
-        /// current user is allowed to query.
-        /// Returns NULL if the user has no restrictions (admin / no policy row).
-        ///
-        /// DB table: user_dataset_access
-        /// </summary>
-
-
-        /// <summary>
-        /// Returns the set of metadata column names the current user is
-        /// allowed to see in the sidebar. Returns NULL meaning "all columns".
-        ///
-        /// DB table: user_metadata_policy
-        /// </summary>
         private HashSet<string> GetAllowedMetadataColumns()
         {
             try
@@ -225,14 +166,6 @@ namespace ongc_webapp
             }
         }
 
-        // ════════════════════════════════════════════════════════
-        //  RESTORE DYNAMIC FILTERS  (called from OnInit)
-        //
-        //  Reads the user's metadata column policy and builds
-        //  the sidebar PlaceHolder with only the permitted columns.
-        //  On PostBack, also restores checkbox / textbox values
-        //  from Request.Form so filters survive the round-trip.
-        // ════════════════════════════════════════════════════════
         private void RestoreDynamicFilters()
         {
             lblStatus.Text =
@@ -253,17 +186,6 @@ namespace ongc_webapp
             GenerateDynamicFilters(visibleKeys);
         }
 
-        // ════════════════════════════════════════════════════════
-        //  GENERATE DYNAMIC FILTERS
-        //
-        //  Creates one "filter-row" per column containing:
-        //    • CheckBox  (ID = cb_<column>)
-        //    • Literal   (display label)
-        //    • Panel     (ID = box_<column>) + TextBox (ID = txt_<column>)
-        //
-        //  On PostBack, checkbox state and textbox text are
-        //  read back from Request.Form using the control's UniqueID.
-        // ════════════════════════════════════════════════════════
         private void GenerateDynamicFilters(HashSet<string> availableColumns)
         {
             phDynamicFilters.Controls.Clear();
@@ -387,7 +309,7 @@ namespace ongc_webapp
                     new List<string>();
 
                 vectorParts.Add(
-                    "to_tsvector('simple', COALESCE(file_name,''))");
+                    "to_tsvector('simple', regexp_replace(COALESCE(file_name,''), '[_-]', ' ', 'g'))");
 
                 vectorParts.Add(
                     "to_tsvector('simple', COALESCE(extracted_text,''))");
@@ -395,9 +317,9 @@ namespace ongc_webapp
                 foreach (string col in visibleColumns)
                 {
                     vectorParts.Add(
-                        "to_tsvector('simple', COALESCE(dynamic_metadata->>'" +
+                        "to_tsvector('simple', regexp_replace(COALESCE(dynamic_metadata->>'" +
                         col.Replace("'", "") +
-                        "',''))");
+                        "',''), '[_-]', ' ', 'g'))");
                 }
 
                 string userSearchVector =
@@ -406,10 +328,14 @@ namespace ongc_webapp
                     ")";
 
                 whereConditions.Add(
-                    userSearchVector +
-                    @" @@ websearch_to_tsquery(
-                'simple',
-                @searchText)");
+                "(" +
+                userSearchVector +
+                @" @@ websearch_to_tsquery(
+                    'simple',
+                    @searchText)
+                OR
+                LOWER(file_name) LIKE LOWER('%' || @searchText || '%')
+                )");
 
                 relevanceExpression =
                     @"ts_rank(
@@ -475,12 +401,6 @@ namespace ongc_webapp
                     ")");
             }
 
-            // ── SECURITY: dataset restriction ─────────────────
-            // Only add the clause when a policy exists;
-            // if allowedDatasets is null the user sees everything.
-
-
-            // ── Keyword search conditions ──────────────────────
             
             int metadataIndex = 0;
 
@@ -597,9 +517,17 @@ namespace ongc_webapp
                         "'" + allowedDatasets[i] + "'");
             }
 
+            string shortQuery = displayQuery;
+
+            if (shortQuery.Length > 200)
+            {
+                shortQuery =
+                    shortQuery.Substring(0, 200) + "...";
+            }
+
             litSqlQuery.Text =
                 "<div class='sql-query-bar'>" +
-                Server.HtmlEncode(displayQuery) +
+                Server.HtmlEncode(shortQuery) +
                 "</div>";
 
             // ── Execute query ──────────────────────────────────
@@ -909,16 +837,22 @@ namespace ongc_webapp
                         {
                             if (!string.IsNullOrWhiteSpace(keyword))
                             {
-                                cellValue =
-                                    System.Text.RegularExpressions.Regex.Replace(
-                                        cellValue,
-                                        System.Text.RegularExpressions.Regex
-                                            .Escape(keyword),
-                                        "<span class='search-highlight'>" +
-                                        keyword +
-                                        "</span>",
-                                        System.Text.RegularExpressions.RegexOptions
-                                            .IgnoreCase);
+                                string normalizedCell =
+                                    cellValue
+                                    .Replace("_", " ")
+                                    .Replace("-", " ");
+
+                                if (normalizedCell.IndexOf(
+                                        keyword,
+                                        StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    cellValue =
+                                        System.Text.RegularExpressions.Regex.Replace(
+                                            cellValue,
+                                            System.Text.RegularExpressions.Regex.Escape(keyword),
+                                            "<span class='search-highlight'>$0</span>",
+                                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                                }
                             }
                         }
                     }
@@ -1168,9 +1102,6 @@ namespace ongc_webapp
             BindDynamicVaultData();
         }
 
-        // ════════════════════════════════════════════════════════
-        //  ROW DATA BOUND – header focus + HTML decode
-        // ════════════════════════════════════════════════════════
         protected void gvDocuments_RowDataBound(
             object sender, GridViewRowEventArgs e)
         {

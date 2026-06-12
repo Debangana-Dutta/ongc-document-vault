@@ -330,19 +330,7 @@
 
     <div class="admin-page-title">ONGC Admin Panel</div>
 
-    <!-- ══════════════════════════════════════════
-     ACCOUNT APPROVALS
-══════════════════════════════════════════ -->
 
-<!-- ACCOUNT APPROVALS -->
-
-
-
-
-
-    <!-- ══════════════════════════════════════════
-         SECTION 2 – ACCESS POLICY
-    ══════════════════════════════════════════ -->
 
     <asp:Panel
     ID="pnlUserManagement"
@@ -461,9 +449,6 @@
 </asp:Panel> 
 
 
-    <!-- ══════════════════════════════════════════
-         SECTION 3 – DOCUMENT INGESTION
-    ══════════════════════════════════════════ -->
     <asp:Panel
     ID="pnlUpload"
     runat="server"

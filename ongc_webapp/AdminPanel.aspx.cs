@@ -1,21 +1,4 @@
-﻿// ============================================================
-//  AdminPanel.aspx.cs
-//  ONGC Document Portal – Admin Panel Code-Behind
-//
-//  KEY FIX (2025-05-29):
-//  The real schema for user_dataset_access is:
-//    userid   INTEGER  (FK → users.id)
-//    datasetid TEXT    (stores source_excel_file value)
-//
-//  The dropdown value in C# is the user's CPF (a string).
-//  Every query against user_dataset_access therefore uses a
-//  subquery:   (SELECT id FROM users WHERE cpf = @cpf)
-//  to resolve the integer userid — no unsafe cast required.
-//
-//  user_metadata_policy still uses user_cpf TEXT, unchanged.
-// ============================================================
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Web.UI;
@@ -118,9 +101,7 @@ namespace ongc_webapp
                 .ConnectionStrings["PostgresConn"]
                 .ConnectionString;
 
-        // ════════════════════════════════════════════════════════
-        //  PAGE LOAD
-        // ════════════════════════════════════════════════════════
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserID"] == null)
@@ -220,44 +201,6 @@ namespace ongc_webapp
             }
         }
 
-
-
-        // ════════════════════════════════════════════════════════
-        //  1. USER MANAGEMENT
-        // ════════════════════════════════════════════════════════
-
-        // ════════════════════════════════════════════════════════
-        //  2. POLICY PANEL — populate dropdowns & checkboxlists
-        // ════════════════════════════════════════════════════════
-
-
-
-        // Populates datasets from distinct source_excel_file values
-        // DB table: indexed_documents
-
-
-        // Populates metadata column names by inspecting JSONB keys
-        // DB table: indexed_documents → dynamic_metadata
-
-
-        // ════════════════════════════════════════════════════════
-        //  3. LOAD EXISTING POLICY (admin selects a user)
-        // ════════════════════════════════════════════════════════
-
-
-
-        // ════════════════════════════════════════════════════════
-        //  4. SAVE ACCESS POLICY
-        //
-        //  FIX SUMMARY for user_dataset_access:
-        //    • DELETE uses:  WHERE userid = (SELECT id FROM users WHERE cpf = @cpf)
-        //    • INSERT uses:  (SELECT id FROM users WHERE cpf = @cpf), @datasetid
-        //    • Column name is "datasetid", not "dataset"
-        //    • No type cast required — subquery returns INTEGER naturally
-        //
-        //  user_metadata_policy is unchanged (user_cpf TEXT = CPF string directly).
-        // ════════════════════════════════════════════════════════
-
         private void BindUserAccessGrid()
         {
             using (NpgsqlConnection conn =
@@ -307,10 +250,6 @@ namespace ongc_webapp
         }
 
 
-
-        // ════════════════════════════════════════════════════════
-        //  5. DOCUMENT INGESTION
-        // ════════════════════════════════════════════════════════
 
         protected void btnIngestData_Click(object sender, EventArgs e)
         {
@@ -442,9 +381,6 @@ namespace ongc_webapp
             }
         }
 
-        // ════════════════════════════════════════════════════════ 
-        //  HELPERS
-        // 
 
         private void ShowFeedback(Label label, string message, bool success)
         {

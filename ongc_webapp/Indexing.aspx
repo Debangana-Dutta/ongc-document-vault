@@ -21,10 +21,6 @@
             color: #202124;
             margin: 0;
         }
-
-        /* ═══════════════════════════
-           SEARCH HERO
-        ═══════════════════════════ */
         .search-hero {
             display: flex;
             flex-direction: column;
@@ -174,9 +170,6 @@
             padding: 6px 0;
         }
 
-        /* ═══════════════════════════
-           TWO-COLUMN LAYOUT
-        ═══════════════════════════ */
         .layout-wrapper {
             display: flex;
             gap: 18px;
@@ -324,9 +317,7 @@
             display: block;
         }
 
-        /* ═══════════════════════════
-           SYNCHRONIZED SCROLLBARS
-        ═══════════════════════════ */
+ 
         .scroll-track {
             overflow-x: auto;
             overflow-y: hidden;
@@ -342,9 +333,6 @@
         #topScrollContent,
         #bottomScrollContent { height: 1px; }
 
-        /* ═══════════════════════════
-           TABLE WRAPPER
-        ═══════════════════════════ */
         .results-wrapper {
             overflow-x: hidden;
             overflow-y: auto;
@@ -353,9 +341,6 @@
             border-radius: 8px;
         }
 
-        /* ═══════════════════════════════════════════════
-           GRID TABLE
-        ═══════════════════════════════════════════════ */
         .grid-table {
             width: auto;
             border-collapse: collapse;
@@ -506,16 +491,35 @@
 
         .sql-query-bar {
             width: 100%;
+            max-width: 100%;
             padding: 12px;
             border: 1px solid #ccc;
-            border-radius: 25px;
+            border-radius: 12px;
             background: #f8f9fa;
 
             overflow-x: auto;
-            white-space: nowrap;
+            overflow-y: hidden;
+
+            white-space: pre;
+            word-break: normal;
 
             font-family: Consolas, monospace;
             font-size: 13px;
+        }
+
+        .copy-sql-btn {
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #7a0616;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-sql-btn:hover {
+            background: #5e0410;
         }
         
         .suggestion-box {
@@ -797,11 +801,24 @@ document.addEventListener(
             });
     });
 
+    function copySqlQuery() {
+
+        var sql =
+            document.querySelector(".sql-query-bar");
+
+        if (!sql)
+            return;
+
+        navigator.clipboard.writeText(
+            sql.innerText
+        );
+
+        alert("SQL query copied.");
+    }
+
     </script>
 
-    <!-- ══════════════════════════════
-         SEARCH HERO
-    ══════════════════════════════ -->
+
     <div class="search-hero">
 
         <div class="search-hero-title">
@@ -857,6 +874,12 @@ document.addEventListener(
         <div id="sqlQueryPanel"
              style="display:none;margin-top:10px;">
 
+            <button type="button"
+                    class="copy-sql-btn"
+                    onclick="copySqlQuery()">
+                Copy SQL
+            </button>
+
             <asp:Literal
                 ID="litSqlQuery"
                 runat="server" />
@@ -888,11 +911,8 @@ document.addEventListener(
 
         </div>
 
-    </div><!-- /search-hero -->
+    </div>
 
-    <!-- ══════════════════════════════
-         TWO-COLUMN LAYOUT
-    ══════════════════════════════ -->
     <div class="layout-wrapper">
 
         <!-- LEFT: Metadata Sidebar (populated dynamically by Page_Load) -->
@@ -915,14 +935,7 @@ document.addEventListener(
                     onkeyup="filterMetadataFilters()" />
             </div>
 
-            <%--
-                phDynamicFilters is the PlaceHolder that code-behind fills.
-                Each filter row is a Panel containing:
-                  • CheckBox  (cb_<columnname>)
-                  • Literal   (label text)
-                  • Panel     (box_<columnname>) containing a TextBox (txt_<columnname>)
-                Only columns allowed by the user's metadata policy are rendered.
-            --%>
+
             <div class="metadata-scroll-area">
                 <asp:PlaceHolder ID="phDynamicFilters" runat="server" />
             </div>
