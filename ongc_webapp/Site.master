@@ -51,15 +51,73 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     
     <style>
+        .header-flex-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            width: 100%;
+            padding-left: 12px;
+            padding-right: 24px;
+        }
+
+        .portal-title {
+            flex: 1;
+
+            text-align: center;
+
+            color: #7a0616;
+
+            font-size: 1.5rem;
+            font-weight: 700;
+
+            text-transform: uppercase;
+            letter-spacing: 1px;
+
+            white-space: nowrap;
+        }
+
+        .brand-logo-frame {
+            width: 100px;
+            flex-shrink: 0;
+        }
+
         * { font-family: 'Public Sans', sans-serif; box-sizing: border-box; }
         body { background-color: #ffffff; }
         .ongc-foundation-header { background-color: #ffffff; padding: 15px 0; border-bottom: 1px solid #f5f5f5; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
-        .header-flex-container { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; padding: 0 40px; }
-        .brand-logo-frame img { height: 70px; width: auto; display: block; }
-        .foundation-nav-list { display: flex; align-items: center; list-style: none; gap: 32px; margin: 0; padding: 0; }
+        .header-flex-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            width: 100%;
+            max-width: none;
+
+            padding-left: 12px;
+            padding-right: 24px;
+        }
+        .brand-logo-frame img {
+                height: 85px;
+                width: auto;
+                display: block;
+            }
+        .foundation-nav-list {
+                display: flex;
+                align-items: center;
+                list-style: none;
+                gap: 24px;
+                margin: 0;
+                padding: 0;
+            }
+        .ongc-foundation-header {
+            background-color: #ffffff;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.01);
+        }
         .foundation-nav-item a, .logout-btn-link { text-decoration: none; color: #7a0616; font-size: 1.05rem; font-weight: 500; padding: 8px 4px; background: none; border: none; cursor: pointer; display: inline-block; }
         .foundation-nav-item a:hover, .logout-btn-link:hover { color: #b00c24; font-weight: 600; }
-        .main-portal-body { min-height: 75vh; padding-top: 10px; }
+        .main-portal-body { min-height: 50vh; padding-top: 10px; }
 
         /* Refined Global Footer */
         .footer-base { background-color: #f8f9fa; border-top: 2px solid #7a0616; padding: 50px 0 30px 0; margin-top: 60px; color: #4a4a4a; }
@@ -84,7 +142,15 @@
     <form runat="server">
         <header class="ongc-foundation-header">
             <div class="header-flex-container">
-                <a href="Dashboard.aspx" class="brand-logo-frame"><img src="ongclogo.png" alt="ONGC Logo" /></a>
+
+                <a href="Dashboard.aspx" class="brand-logo-frame">
+                    <img src="ongclogo.png" alt="DOC AXIS Logo" />
+                </a>
+
+                <div class="portal-title">
+                    DOCUMENT ASSET AND INFORMATION SEARCH SYSTEM
+                </div>
+
                 <nav class="d-flex align-items-center">
                     <ul class="foundation-nav-list">
                         <li class="foundation-nav-item"><a href="Dashboard.aspx">Home</a></li>

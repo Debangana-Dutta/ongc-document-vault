@@ -231,15 +231,38 @@ namespace ongc_webapp
             using (NpgsqlConnection conn =
                 new NpgsqlConnection(connString))
             {
+                string searchText = "";
+
+                if (txtUserSearch != null)
+                {
+                    searchText =
+                        txtUserSearch.Text.Trim();
+                }
+
                 conn.Open();
 
-                string whereClause = "";
+                List<string> conditions =
+                new List<string>();
 
                 if (ShowPendingOnly)
                 {
-                    whereClause =
-                        "WHERE u.account_status = 'PENDING'";
+                    conditions.Add(
+                        "u.account_status = 'PENDING'");
                 }
+
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    conditions.Add(
+                    @"(
+                        LOWER(u.username) LIKE @search
+                        OR LOWER(u.employee_name) LIKE @search
+                    )");
+                }
+
+                string whereClause =
+                conditions.Count > 0
+                ? "WHERE " + string.Join(" AND ", conditions)
+                : "";
 
                 string query =
                 $@"
@@ -263,6 +286,13 @@ namespace ongc_webapp
                 using (NpgsqlDataAdapter da =
                     new NpgsqlDataAdapter(query, conn))
                 {
+                    if (!string.IsNullOrWhiteSpace(searchText))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue(
+                            "search",
+                            "%" + searchText.ToLower() + "%");
+                    }
+
                     DataTable dt =
                         new DataTable();
 
@@ -274,7 +304,12 @@ namespace ongc_webapp
             }
         }
 
-
+        protected void btnSearchUsers_Click(
+            object sender,
+            EventArgs e)
+        {
+            BindUserAccessGrid();
+        }
 
         protected void btnIngestData_Click(object sender, EventArgs e)
         {
@@ -518,6 +553,7 @@ namespace ongc_webapp
                         object sender,
                         EventArgs e)
         {
+            LoadActivitySummary();
             LoadActivityLogs();
         }
 
@@ -526,6 +562,8 @@ namespace ongc_webapp
             EventArgs e)
         {
             ShowTab("activity");
+
+            LoadActivitySummary();
             LoadActivityLogs();
         }
 
@@ -564,6 +602,36 @@ namespace ongc_webapp
 
                     gvActivityLogs.DataSource = dt;
                     gvActivityLogs.DataBind();
+                }
+            }
+        }
+
+        private void LoadActivitySummary()
+        {
+            using (NpgsqlConnection conn =
+                new NpgsqlConnection(connString))
+            {
+                conn.Open();
+
+                string sql =
+                @"
+        SELECT
+            activity_type,
+            COUNT(*) AS activity_count
+        FROM user_activity_logs
+        GROUP BY activity_type
+        ORDER BY COUNT(*) DESC";
+
+                using (NpgsqlDataAdapter da =
+                    new NpgsqlDataAdapter(sql, conn))
+                {
+                    DataTable dt =
+                        new DataTable();
+
+                    da.Fill(dt);
+
+                    gvActivitySummary.DataSource = dt;
+                    gvActivitySummary.DataBind();
                 }
             }
         }

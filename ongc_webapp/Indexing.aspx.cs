@@ -32,11 +32,10 @@ namespace ongc_webapp
 
             BindDatasetFilter();
 
-            if (Session["SelectedDataset"] == null &&
-                rblDatasets.Items.Count > 0)
+            if (Session["SelectedDataset"] == null && ddlDatasets.Items.Count > 0)
             {
                 Session["SelectedDataset"] =
-                    rblDatasets.Items[0].Value;
+                    ddlDatasets.Items[0].Value;
             }
 
             RestoreDynamicFilters();
@@ -48,8 +47,8 @@ namespace ongc_webapp
             if (Session["SelectedDataset"] != null)
                 return Session["SelectedDataset"].ToString();
 
-            if (!string.IsNullOrEmpty(rblDatasets.SelectedValue))
-                return rblDatasets.SelectedValue;
+            if (!string.IsNullOrEmpty(ddlDatasets.SelectedValue))
+                return ddlDatasets.SelectedValue;
 
             return "";
         }
@@ -286,7 +285,7 @@ namespace ongc_webapp
                 .Split(new char[] { ' ' },
                     StringSplitOptions.RemoveEmptyEntries)
                 .Distinct()
-                .Take(6)
+                .Take(10)
                 .ToList();
 
             // ── Build SQL ──────────────────────────────────────
@@ -332,6 +331,49 @@ namespace ongc_webapp
                     string.Join(" || ", vectorParts) +
                     ")";
 
+                string exactPhrase =
+                rawSearch
+                    .Replace("'", "")
+                    .Trim();
+
+                List<string> intersectionChecks =
+                    new List<string>();
+
+                foreach (string keyword in keywords)
+                {
+                    intersectionChecks.Add(
+                        userSearchVector +
+                        " @@ plainto_tsquery('simple', '" +
+                        keyword.Replace("'", "") +
+                        "')");
+                }
+
+                string intersectionExpression =
+                    string.Join(
+                        " AND ",
+                        intersectionChecks);
+
+                List<string> keywordMatchParts =
+                new List<string>();
+
+                foreach (string keyword in keywords)
+                {
+                    keywordMatchParts.Add(
+                        @"CASE
+                         WHEN " + userSearchVector + @"
+                         @@ plainto_tsquery(
+                        'simple',
+                        '" + keyword.Replace("'", "") + @"')
+                        THEN 1
+                        ELSE 0
+                      END");
+                            }
+
+                string keywordMatchExpression =
+                    string.Join(
+                        " + ",
+                        keywordMatchParts);
+
                 whereConditions.Add(
                 "(" +
                 userSearchVector +
@@ -343,13 +385,38 @@ namespace ongc_webapp
                 )");
 
                 relevanceExpression =
-                    @"ts_rank(
-            " + userSearchVector + @",
-            websearch_to_tsquery(
-                'simple',
-                @searchText
-            )
-            )";
+                @"
+                (
+                    CASE
+                        WHEN LOWER(COALESCE(file_name,'')) LIKE
+                             LOWER('%" + exactPhrase + @"%')
+                        THEN 10000
+                        ELSE 0
+                    END
+                )
+                +
+                (
+                    CASE
+                        WHEN (" + intersectionExpression + @")
+                        THEN 3000
+                        ELSE 0
+                    END
+                )
+                +
+                (
+                    (" + keywordMatchExpression + @")
+                    * 1000
+                )
+                +
+                (
+                    ts_rank(
+                        " + userSearchVector + @",
+                        websearch_to_tsquery(
+                            'simple',
+                            @searchText
+                        )
+                    ) * 100
+                )";
             }
             
            
@@ -537,7 +604,6 @@ namespace ongc_webapp
                 "<textarea id='fullSqlQuery' style='display:none;'>" +
                 Server.HtmlEncode(displayQuery) +
                 "</textarea>";
-
             // ── Execute query ──────────────────────────────────
             List<Dictionary<string, string>> allRows =
                 new List<Dictionary<string, string>>();
@@ -611,8 +677,8 @@ namespace ongc_webapp
                         if (keywords.Count > 0)
                         {
                             cmd.Parameters.AddWithValue(
-                            "searchText",
-                            string.Join(" OR ", keywords));
+                                "searchText",
+                                string.Join(" OR ", keywords));
                         }
 
                         // Bind dataset security parameters
@@ -953,18 +1019,18 @@ namespace ongc_webapp
                     Session["SelectedDataset"].ToString();
             }
 
-            rblDatasets.Items.Clear();
+            ddlDatasets.Items.Clear();
 
             foreach (string dataset in datasets)
             {
-                rblDatasets.Items.Add(
+                ddlDatasets.Items.Add(
                     new ListItem(dataset, dataset));
             }
 
             if (!string.IsNullOrEmpty(selected))
             {
                 ListItem item =
-                    rblDatasets.Items.FindByValue(selected);
+                    ddlDatasets.Items.FindByValue(selected);
 
                 if (item != null)
                 {
@@ -972,22 +1038,22 @@ namespace ongc_webapp
                 }
             }
 
-            if (rblDatasets.Items.Count > 0 &&
-                string.IsNullOrEmpty(rblDatasets.SelectedValue))
+            if (ddlDatasets.Items.Count > 0 &&
+                string.IsNullOrEmpty(ddlDatasets.SelectedValue))
             {
-                rblDatasets.SelectedIndex = 0;
+                ddlDatasets.SelectedIndex = 0;
 
                 Session["SelectedDataset"] =
-                    rblDatasets.SelectedValue;
+                    ddlDatasets.SelectedValue;
             }
         }
 
-        protected void rblDatasets_SelectedIndexChanged(
+        protected void ddlDatasets_SelectedIndexChanged(
                         object sender,
                         EventArgs e)
         {
 
-            Session["SelectedDataset"] = rblDatasets.SelectedValue;
+            Session["SelectedDataset"] = ddlDatasets.SelectedValue;
 
             CurrentPage = 1;
 

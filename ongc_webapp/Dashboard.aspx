@@ -16,7 +16,11 @@
     </style>
 
     <div class="hero-banner">
-        <h2 class="fw-bold">Welcome Back, User</h2>
+        <h2 class="fw-bold">
+            Welcome Back,
+            <asp:Label ID="lblWelcomeName"
+                runat="server" />
+        </h2>
         <p class="mb-0" style="opacity: 0.85;">ONGC Document Indexing & Enterprise Retrieval System</p>
     </div>
 

@@ -19,6 +19,9 @@ namespace ongc_webapp
 
             if (!IsPostBack)
             {
+                lblWelcomeName.Text =
+                GetFirstName();
+
                 LoadLiveSystemSummary();
             }
         }
@@ -69,6 +72,57 @@ namespace ongc_webapp
                 }
 
                 
+            }
+        }
+
+        private string GetFirstName()
+        {
+            try
+            {
+                using (NpgsqlConnection conn =
+                    new NpgsqlConnection(connString))
+                {
+                    conn.Open();
+
+                    string query =
+                        @"SELECT employee_name
+                      FROM users
+                      WHERE username = @username";
+
+                    using (NpgsqlCommand cmd =
+                        new NpgsqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "username",
+                            Session["UserID"].ToString());
+
+                        object result =
+                            cmd.ExecuteScalar();
+
+                        if (result == null)
+                            return "User";
+
+                        string fullName =
+                            result.ToString().Trim();
+
+                        if (string.IsNullOrWhiteSpace(fullName))
+                            return "User";
+
+                        string[] parts =
+                            fullName.Split(
+                                new char[] { ' ' },
+                                StringSplitOptions.RemoveEmptyEntries);
+
+                        return parts.Length > 0
+                            ? parts[0]
+                            : "User";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblWelcomeName.Text = ex.Message;
+                return "User";
             }
         }
 

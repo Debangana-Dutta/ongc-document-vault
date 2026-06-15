@@ -201,6 +201,26 @@
             margin-bottom: 12px;
         }
 
+        .dataset-dropdown-container {
+            margin-bottom: 16px;
+        }
+
+        .dataset-dropdown {
+            width: 100% !important;
+
+            height: 42px !important;
+
+            border: 1px solid #dadce0 !important;
+            border-radius: 8px !important;
+
+            padding: 0 12px !important;
+
+            font-size: 14px !important;
+            font-weight: 500;
+
+            background: #fff !important;
+        }
+
         /* ── Access-restricted notice badge ── */
         .access-badge {
             display: inline-block;
@@ -214,7 +234,10 @@
             margin-bottom: 12px;
         }
 
-        .metadata-filter-search { margin-bottom: 12px; }
+        .metadata-filter-search {
+                margin-top: 10px;
+                margin-bottom: 12px;
+            }
 
         .metadata-filter-search input[type="text"] {
             border-radius: 20px !important;
@@ -823,7 +846,7 @@ function copySqlQuery() {
     <div class="search-hero">
 
         <div class="search-hero-title">
-            Enterprise Metadata Search Engine
+            Search
         </div>
 
         <div class="search-row">
@@ -910,9 +933,20 @@ function copySqlQuery() {
         <!-- LEFT: Metadata Sidebar (populated dynamically by Page_Load) -->
         <div class="filter-sidebar">
 
-            <h5>Metadata Filters</h5>
+            <h5>Filters</h5>
 
-            <%-- Access badge: shown/hidden by code-behind via Visible property --%>
+            <div class="dataset-dropdown-container">
+
+                <asp:DropDownList
+                    ID="ddlDatasets"
+                    runat="server"
+                    CssClass="dataset-dropdown"
+                    AutoPostBack="true"
+                    OnSelectedIndexChanged="ddlDatasets_SelectedIndexChanged">
+                </asp:DropDownList>
+
+            </div>
+
             <asp:Label ID="lblAccessBadge"
                 runat="server"
                 CssClass="access-badge"
@@ -930,23 +964,6 @@ function copySqlQuery() {
 
             <div class="metadata-scroll-area">
                 <asp:PlaceHolder ID="phDynamicFilters" runat="server" />
-            </div>
-
-            <hr style="margin:12px 0;" />
-
-            <h5>Dataset Filter</h5>
-
-            <div class="metadata-scroll-area">
-
-                <asp:RadioButtonList
-                    ID="rblDatasets"
-                    runat="server"
-                    AutoPostBack="true"
-                    RepeatDirection="Vertical"
-                    RepeatLayout="Table"
-                    OnSelectedIndexChanged="rblDatasets_SelectedIndexChanged">
-                </asp:RadioButtonList>
-
             </div>
 
             <div class="metadata-filter-footer">

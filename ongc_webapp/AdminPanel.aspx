@@ -23,8 +23,8 @@
 
     /* ── Page wrapper ── */
     .admin-page {
-        max-width: 1100px;
-        margin: 0 auto;
+        width: 100%;
+        max-width: none;
         padding: 28px 24px 48px;
     }
 
@@ -289,6 +289,18 @@
         color: white;
     }
 
+    .search-user-box {
+    width: 300px;
+    height: 40px;
+
+    border: 1.5px solid #dfe1e5;
+    border-radius: 8px;
+
+    padding: 0 12px;
+
+    font-size: 0.875rem;
+    }
+
 </style>
 
 <div class="admin-page">
@@ -361,6 +373,23 @@
     <p class="upload-hint">
         Manage dataset and metadata visibility for each user.
     </p>
+
+        <div class="form-row">
+
+        <asp:TextBox
+            ID="txtUserSearch"
+            runat="server"
+            CssClass="search-user-box"
+            placeholder="Search username..." />
+
+        <asp:Button
+            ID="btnSearchUsers"
+            runat="server"
+            Text="Search"
+            CssClass="btn-ongc"
+            OnClick="btnSearchUsers_Click" />
+
+        </div>
 
     <asp:GridView
         ID="gvUserAccess"
@@ -500,6 +529,37 @@
     <div class="admin-card">
 
         <h4>User Activity Log</h4>
+
+        <h5 style="margin-top:15px;
+           margin-bottom:12px;
+           color:#7a0616;
+                   font-weight:600;">
+            Activity Summary
+        </h5>
+
+        <asp:GridView
+            ID="gvActivitySummary"
+            runat="server"
+            CssClass="admin-grid"
+            AutoGenerateColumns="False">
+
+            <Columns>
+
+                <asp:BoundField
+                    DataField="activity_type"
+                    HeaderText="Activity Type" />
+
+                <asp:BoundField
+                    DataField="activity_count"
+                    HeaderText="Count" />
+
+            </Columns>
+
+        </asp:GridView>
+
+        <br />
+        <hr />
+        <br />
 
         <div class="form-row">
 

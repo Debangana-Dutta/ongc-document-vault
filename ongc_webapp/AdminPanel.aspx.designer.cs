@@ -78,6 +78,24 @@ namespace ongc_webapp
         protected global::System.Web.UI.WebControls.Button btnShowPending;
 
         /// <summary>
+        /// txtUserSearch control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtUserSearch;
+
+        /// <summary>
+        /// btnSearchUsers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSearchUsers;
+
+        /// <summary>
         /// gvUserAccess control.
         /// </summary>
         /// <remarks>
@@ -139,6 +157,15 @@ namespace ongc_webapp
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlActivity;
+
+        /// <summary>
+        /// gvActivitySummary control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView gvActivitySummary;
 
         /// <summary>
         /// btnRefreshActivity control.
