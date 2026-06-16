@@ -390,7 +390,7 @@ namespace ongc_webapp
                     CASE
                         WHEN LOWER(COALESCE(file_name,'')) LIKE
                              LOWER('%" + exactPhrase + @"%')
-                        THEN 10000
+                        THEN 500
                         ELSE 0
                     END
                 )

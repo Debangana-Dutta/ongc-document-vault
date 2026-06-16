@@ -404,7 +404,10 @@
 
             <asp:BoundField
                 DataField="username"
-                HeaderText="User" />
+                HeaderText="CPF" />
+            <asp:BoundField
+                DataField="employee_name"
+                HeaderText="Full Name" />
 
             <asp:BoundField
                 DataField="role"
@@ -529,6 +532,35 @@
     <div class="admin-card">
 
         <h4>User Activity Log</h4>
+
+        <div class="form-row">
+
+            <div class="form-group">
+                <label>Start Date</label>
+
+                <asp:TextBox
+                    ID="txtStartDate"
+                    runat="server"
+                    TextMode="Date" />
+            </div>
+
+            <div class="form-group">
+                <label>End Date</label>
+
+                <asp:TextBox
+                    ID="txtEndDate"
+                    runat="server"
+                    TextMode="Date" />
+            </div>
+
+            <asp:Button
+                ID="btnFilterActivity"
+                runat="server"
+                Text="Apply Filter"
+                CssClass="btn-ongc"
+                OnClick="btnFilterActivity_Click" />
+
+        </div>
 
         <h5 style="margin-top:15px;
            margin-bottom:12px;

@@ -12,49 +12,80 @@
     <style>
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f5f7fa;
+            background-color: #f4f6f8;
+            font-family: 'Public Sans', Arial, sans-serif;
             margin: 0;
             padding: 0;
         }
 
         .page-container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 20px;
+            max-width: 1400px;
+            margin: 25px auto;
+            padding: 0 20px;
+        }
+
+        .hero-banner {
+            background: #7a0616;
+            color: white;
+            padding: 35px;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 25px;
+        }
+
+        .hero-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            opacity: 0.85;
         }
 
         .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
+            background: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 25px;
+            margin-bottom: 25px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         h2 {
+            color: #7a0616;
             margin-top: 0;
-            color: #1f2937;
+            font-size: 1.7rem;
+            font-weight: 700;
         }
 
         h3 {
+            color: #7a0616;
             margin-top: 0;
-            color: #374151;
+            font-size: 1.3rem;
+            font-weight: 700;
         }
 
         .section-title {
-            margin-bottom: 15px;
             font-weight: 600;
             color: #374151;
+            margin-bottom: 15px;
         }
 
         .checkbox-box {
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 12px;
-            max-height: 350px;
-            overflow-y: auto;
+            border: 1px solid #e5e7eb;
             background: #fafafa;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .checkbox-box table {
+            width: 100%;
+        }
+
+        .checkbox-box input[type=checkbox] {
+            margin-right: 8px;
         }
 
         .button-row {
@@ -62,38 +93,68 @@
         }
 
         .btn {
-            padding: 10px 16px;
+            padding: 10px 18px;
+            border-radius: 4px;
             border: none;
-            border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
-            margin-right: 10px;
+            font-weight: 600;
         }
 
         .btn-primary {
-            background-color: #2563eb;
+            background: #7a0616;
             color: white;
+        }
+
+        .btn-primary:hover {
+            background: #94091b;
         }
 
         .btn-success {
-            background-color: #16a34a;
+            background: #198754;
             color: white;
+        }
+
+        .btn-success:hover {
+            background: #157347;
         }
 
         .btn-secondary {
-            background-color: #6b7280;
+            background: #6c757d;
             color: white;
         }
 
+        .btn-secondary:hover {
+            background: #5c636a;
+        }
+
         .user-info {
-            line-height: 1.8;
-            font-size: 15px;
+            font-size: 1rem;
+            line-height: 2;
         }
 
         .status-label {
-            margin-top: 15px;
             display: block;
-            font-weight: bold;
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        input[type=text],
+        select,
+        textarea {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        select {
+            width: 350px;
+        }
+
+        asp\:CheckBoxList {
+            width: 100%;
         }
 
     </style>
@@ -106,9 +167,17 @@
 
         <div class="page-container">
 
-            <div class="card">
+            <div class="hero-banner">
+                <div class="hero-title">
+                    Manage User Access
+                </div>
 
-                <h2>Manage User Access</h2>
+                <div class="hero-subtitle">
+                    Configure dataset permissions and metadata visibility for users.
+                </div>
+            </div>
+
+            <div class="card">
 
                 <div class="user-info">
 
@@ -122,7 +191,7 @@
 
             <div class="card">
 
-                <h3>Step 1 — Dataset Access</h3>
+                <h3>Dataset Access Management</h3>
 
                 <div style="margin-bottom:15px;">
 
@@ -192,7 +261,7 @@
 
             <div class="card">
 
-                <h3>Step 2 — Metadata Visibility</h3>
+                <h3>Filter Visibility Settings</h3>
                 <br /><br />
 
                 <p class="section-title">

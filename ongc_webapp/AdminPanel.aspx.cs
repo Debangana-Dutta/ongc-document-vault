@@ -267,24 +267,26 @@ namespace ongc_webapp
                 string query =
                 $@"
                     SELECT
-                        u.id,
-                        u.username,
-                        u.role,
-                        u.account_status,
-                        COUNT(uda.dataset_name) AS dataset_count
+                    u.id,
+                    u.username,
+                    u.employee_name,
+                    u.role,
+                    u.account_status,
+                    COUNT(uda.dataset_name) AS dataset_count
                     FROM users u
                     LEFT JOIN user_dataset_access uda
                         ON uda.userid = u.id
                     {whereClause}
                     GROUP BY
-                        u.id,
-                        u.username,
-                        u.role,
-                        u.account_status
+                    u.id,
+                    u.username,
+                    u.employee_name,
+                    u.role,
+                    u.account_status
                     ORDER BY u.username";
 
                 using (NpgsqlDataAdapter da =
-                    new NpgsqlDataAdapter(query, conn))
+                new NpgsqlDataAdapter(query, conn))
                 {
                     if (!string.IsNullOrWhiteSpace(searchText))
                     {
@@ -293,8 +295,7 @@ namespace ongc_webapp
                             "%" + searchText.ToLower() + "%");
                     }
 
-                    DataTable dt =
-                        new DataTable();
+                    DataTable dt = new DataTable();
 
                     da.Fill(dt);
 
@@ -302,8 +303,16 @@ namespace ongc_webapp
                     gvUserAccess.DataBind();
                 }
             }
-        }
+         }
+        
 
+        protected void btnFilterActivity_Click(
+                    object sender,
+                    EventArgs e)
+        {
+            LoadActivitySummary();
+            LoadActivityLogs();
+        }
         protected void btnSearchUsers_Click(
             object sender,
             EventArgs e)
@@ -582,21 +591,54 @@ namespace ongc_webapp
                 conn.Open();
 
                 string sql = @"
-            SELECT
-                created_at,
-                username,
-                activity_type,
-                dataset_name,
-                file_name,
-                search_query
-            FROM user_activity_logs
-            ORDER BY created_at DESC
-            LIMIT 100";
+                SELECT
+                    created_at,
+                    username,
+                    activity_type,
+                    dataset_name,
+                    file_name,
+                    search_query
+                FROM user_activity_logs
+                WHERE
+                    created_at >= @startDate
+                AND
+                    created_at < @endDate
+                ORDER BY created_at DESC
+                LIMIT 50";
 
                 using (NpgsqlDataAdapter da =
                     new NpgsqlDataAdapter(sql, conn))
                 {
                     DataTable dt = new DataTable();
+
+                    DateTime startDate;
+                    DateTime endDate;
+
+                    if (DateTime.TryParse(txtStartDate.Text, out startDate))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue(
+                            "startDate",
+                            startDate);
+                    }
+                    else
+                    {
+                        da.SelectCommand.Parameters.AddWithValue(
+                            "startDate",
+                            DateTime.MinValue);
+                    }
+
+                    if (DateTime.TryParse(txtEndDate.Text, out endDate))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue(
+                            "endDate",
+                            endDate.AddDays(1));
+                    }
+                    else
+                    {
+                        da.SelectCommand.Parameters.AddWithValue(
+                            "endDate",
+                            DateTime.MaxValue);
+                    }
 
                     da.Fill(dt);
 
@@ -614,19 +656,50 @@ namespace ongc_webapp
                 conn.Open();
 
                 string sql =
-                @"
-        SELECT
-            activity_type,
-            COUNT(*) AS activity_count
-        FROM user_activity_logs
-        GROUP BY activity_type
-        ORDER BY COUNT(*) DESC";
+                    @"
+                    SELECT
+                        activity_type,
+                        COUNT(*) AS activity_count
+                    FROM user_activity_logs
+                    WHERE
+                        created_at >= @startDate
+                    AND
+                        created_at < @endDate
+                    GROUP BY activity_type
+                    ORDER BY COUNT(*) DESC";
 
                 using (NpgsqlDataAdapter da =
-                    new NpgsqlDataAdapter(sql, conn))
+    new NpgsqlDataAdapter(sql, conn))
                 {
-                    DataTable dt =
-                        new DataTable();
+                    DataTable dt = new DataTable();
+
+                    DateTime startDate;
+                    DateTime endDate;
+
+                    object startValue = DBNull.Value;
+                    object endValue = DBNull.Value;
+
+                    if (DateTime.TryParse(
+                        txtStartDate.Text,
+                        out startDate))
+                    {
+                        startValue = startDate;
+                    }
+
+                    if (DateTime.TryParse(
+                        txtEndDate.Text,
+                        out endDate))
+                    {
+                        endValue = endDate.AddDays(1);
+                    }
+
+                    da.SelectCommand.Parameters.AddWithValue(
+                        "startDate",
+                        startValue);
+
+                    da.SelectCommand.Parameters.AddWithValue(
+                        "endDate",
+                        endValue);
 
                     da.Fill(dt);
 
